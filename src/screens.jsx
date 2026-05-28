@@ -353,18 +353,18 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       label: 'Help now',
       desc: 'Safety, calming, and one next step.',
       tabs: [
-        { id: 'overview',  label: 'Overview' },
-        { id: 'guide',     label: 'What now?' },
-        { id: 'unsafe',    label: 'Help now' },
+        { id: 'overview',  label: 'Start here' },
+        { id: 'guide',     label: "I don't know" },
+        { id: 'unsafe',    label: 'I am not safe' },
         { id: 'coercion',  label: 'Being controlled' },
         { id: 'dv',        label: 'Abuse plan' },
         { id: 'csa',       label: 'Past abuse' },
         { id: 'medical',   label: 'Body danger signs' },
-        { id: 'privacy',   label: 'Privacy' },
-        { id: 'modes',     label: 'Modes' },
-        { id: 'mood',      label: t('tools.mood') },
+        { id: 'privacy',   label: 'Shared phone safety' },
+        { id: 'modes',     label: 'Support modes' },
+        { id: 'mood',      label: 'Mood check' },
         { id: 'reframe',   label: t('tools.reframe') },
-        { id: 'affirm',    label: 'Affirmations' },
+        { id: 'affirm',    label: 'Safe sentences' },
       ],
     },
     {
@@ -372,24 +372,24 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       label: 'I feel triggered',
       desc: 'Shame, triggers, body alarm, and old stories.',
       tabs: [
-        { id: 'cards',     label: 'Cards' },
-        { id: 'shame',     label: 'Shame Map' },
-        { id: 'profiles',  label: 'Profiles' },
-        { id: 'triggers',  label: 'Triggers' },
-        { id: 'language',  label: 'Language' },
-        { id: 'loops',     label: 'Mind loops' },
+        { id: 'cards',     label: 'Survivor cards' },
+        { id: 'shame',     label: 'Shame spiral map' },
+        { id: 'profiles',  label: 'Body responses' },
+        { id: 'triggers',  label: 'Trigger library' },
+        { id: 'language',  label: 'Safer words' },
+        { id: 'loops',     label: 'Thought loops' },
       ],
     },
     {
       id: 'repair',
-      label: 'I need words',
+      label: 'I need words to say',
       desc: 'Scripts and plans for hard or tender moments.',
       tabs: [
-        { id: 'boundaries', label: 'Boundaries' },
-        { id: 'anger',     label: 'Anger' },
-        { id: 'roughday',  label: 'Rough Day' },
-        { id: 'night',     label: 'Night' },
-        { id: 'goodday',   label: 'Good Day' },
+        { id: 'boundaries', label: 'Boundary scripts' },
+        { id: 'anger',     label: 'Anger and grief' },
+        { id: 'roughday',  label: 'Rough-day plan' },
+        { id: 'night',     label: 'Night plan' },
+        { id: 'goodday',   label: 'Good-day safety' },
       ],
     },
     {
@@ -397,18 +397,18 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       label: 'What this is about',
       desc: 'Family, faith, work, relationships, and night.',
       tabs: [
-        { id: 'environment', label: 'Environments' },
-        { id: 'culture',   label: 'Culture' },
-        { id: 'relationships', label: 'Relations' },
-        { id: 'intimacy',  label: 'Intimacy' },
-        { id: 'workplace', label: 'Work' },
+        { id: 'environment', label: 'Place safety' },
+        { id: 'culture',   label: 'Family and faith' },
+        { id: 'relationships', label: 'Relationships' },
+        { id: 'intimacy',  label: 'Safe intimacy' },
+        { id: 'workplace', label: 'Work pressure' },
       ],
     },
     ...(showResearch ? [{
       id: 'research',
       label: 'Research',
       desc: 'Codebooks and capture references.',
-      tabs: [{ id: 'research', label: 'Research' }],
+      tabs: [{ id: 'research', label: 'Research dashboard' }],
     }] : []),
   ];
   const activeGroup = toolGroups.find(group => group.tabs.some(x => x.id === tab)) || toolGroups[0];
@@ -659,20 +659,23 @@ function TapOnlyNote() {
 function WhatNowPanel({ onSelectTab, onOpenTool }) {
   const [safety, setSafety] = useStateS(null);
   const [need, setNeed] = useStateS(null);
+  const [showMoreChoices, setShowMoreChoices] = useStateS(false);
   const urgent = safety === 'red';
   const choices = [
     ['danger', 'I am in danger', 'Shouting, threats, self-harm risk, blocked exit, or nowhere safe.', 'unsafe'],
     ['control', 'Someone is controlling me', 'Monitoring, pressure, threats, forced choices, or fear of saying no.', 'coercion'],
-    ['public', 'I am in public / at work', 'I need something discreet and quiet on screen.', 'public'],
     ['body', 'My body is activated', 'Tight chest, shaking, panic, numbness, floating, or flashback.', 'grounding'],
     ['family', 'Family pressure', 'Honour, obedience, emotional blackmail, or fear of speaking.', 'culture'],
     ['shame', 'Shame spiral', 'I feel wrong, guilty, too much, dirty, selfish, or impossible.', 'shame'],
     ['faith', 'Religious guilt or spiritual comfort', 'I need faith-sensitive words without blame or preaching.', 'culture'],
+    ['words', 'I need words to say', 'A boundary, a repair line, or a script I can copy.', 'boundaries'],
+    ['public', 'I am in public / at work', 'I need something discreet and quiet on screen.', 'public'],
     ['work', 'Workplace humiliation', 'Feedback, hierarchy, public correction, deadlines, or office politics.', 'workplace'],
     ['relationship', 'Marriage or relationship pressure', 'Rishta pressure, in-laws, abandonment fear, conflict, or control.', 'relationships'],
-    ['words', 'I need words to say', 'A boundary, a repair line, or a script I can copy.', 'boundaries'],
     ['night', 'Night-time loneliness', 'Night panic, loneliness, nightmares, or after-dark fear.', 'night'],
   ];
+  const nonUrgentChoices = choices.filter(([id]) => id !== 'danger');
+  const visibleChoices = showMoreChoices ? nonUrgentChoices : nonUrgentChoices.slice(0, 6);
 
   const go = (target) => {
     if (target === 'public' || target === 'grounding') onOpenTool(target);
@@ -689,17 +692,17 @@ function WhatNowPanel({ onSelectTab, onOpenTool }) {
 
       <div className="grid-3">
         <button className={"card" + (safety === 'red' ? ' chip-rose' : '')} style={{ textAlign: 'left' }} onClick={() => setSafety('red')}>
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Red</p>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Urgent</p>
           <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>I am not safe.</h3>
           <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>I need a person, exit, call, or urgent safety plan now.</p>
         </button>
         <button className={"card" + (safety === 'amber' ? ' chip-amber' : '')} style={{ textAlign: 'left' }} onClick={() => setSafety('amber')}>
-          <p className="eyebrow" style={{ color: 'var(--amber)' }}>Amber</p>
+          <p className="eyebrow" style={{ color: 'var(--amber)' }}>Flooded</p>
           <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>I am flooded but not in immediate danger.</h3>
           <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>I need grounding before any thinking or decisions.</p>
         </button>
         <button className={"card" + (safety === 'green' ? ' chip-forest' : '')} style={{ textAlign: 'left' }} onClick={() => setSafety('green')}>
-          <p className="eyebrow" style={{ color: 'var(--forest)' }}>Green</p>
+          <p className="eyebrow" style={{ color: 'var(--forest)' }}>Safe enough</p>
           <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>I am safe enough to reflect.</h3>
           <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>I can pick a card, script, or context map.</p>
         </button>
@@ -731,13 +734,16 @@ function WhatNowPanel({ onSelectTab, onOpenTool }) {
         <div className="stack">
           <p className="eyebrow">Pick what fits closest</p>
           <div className="grid-2">
-            {choices.filter(([id]) => id !== 'danger').map(([id, title, desc, target]) => (
+            {visibleChoices.map(([id, title, desc, target]) => (
               <button key={id} className={"card" + (need === id ? ' chip-active' : '')} style={{ textAlign: 'left' }} onClick={() => { setNeed(id); go(target); }}>
                 <h3 className="display" style={{ fontSize: 20 }}>{title}</h3>
                 <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{desc}</p>
               </button>
             ))}
           </div>
+          {!showMoreChoices && nonUrgentChoices.length > visibleChoices.length && (
+            <button className="btn btn-ghost" onClick={() => setShowMoreChoices(true)}>Show more choices</button>
+          )}
         </div>
       )}
     </div>
