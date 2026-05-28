@@ -524,13 +524,13 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
 function HiddenResultsCard({ count, label, onShow }) {
   return (
     <div className="card-sunk" style={{ background: 'var(--forest-wash)' }}>
-      <p className="eyebrow" style={{ color: 'var(--forest)' }}>Library list hidden</p>
+      <p className="eyebrow" style={{ color: 'var(--forest)' }}>Optional library list</p>
       <p style={{ color: 'var(--ink-soft)', marginTop: 6 }}>
-        {count} {label} are available. Survivor mode keeps the large list closed so this screen stays calmer.
+        A larger reference list is available if you want to browse. Survivor mode keeps it closed so this screen stays calmer.
       </p>
       <div className="cluster" style={{ marginTop: 12 }}>
         <button className="btn btn-soft btn-tiny" onClick={onShow}>
-          <window.Icon name="tools" size={14} /> Show list
+          <window.Icon name="tools" size={14} /> Open library list
         </button>
       </div>
     </div>
@@ -868,8 +868,8 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} matching cards</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} matching cards` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
       </div>
       {!showResults ? (
         <HiddenResultsCard count={filtered.length} label="matching cards" onShow={() => setShowResults(true)} />
@@ -1019,8 +1019,8 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} matching maps</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} matching maps` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
       </div>
       {!showResults ? (
         <HiddenResultsCard count={filtered.length} label="matching maps" onShow={() => setShowResults(true)} />
@@ -1198,8 +1198,8 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} matching profiles</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} matching profiles` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
       </div>
       {!showResults ? (
         <HiddenResultsCard count={filtered.length} label="matching profiles" onShow={() => setShowResults(true)} />
@@ -1341,8 +1341,8 @@ function BoundaryScriptsPanel({ showBrowseLists = true, tapOnlyMode = false, rea
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} matching scripts</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} matching scripts` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'Closed for a calmer screen.'}</p>
       </div>
       {!showResults ? (
         <HiddenResultsCard count={filtered.length} label="matching scripts" onShow={() => setShowResults(true)} />
@@ -1965,8 +1965,8 @@ function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = fals
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} matching rows</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} matching rows` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'Closed for a calmer screen.'}</p>
       </div>
       {!showResults ? (
         <HiddenResultsCard count={filtered.length} label="matching rows" onShow={() => setShowResults(true)} />
@@ -2063,8 +2063,8 @@ function TriggerLibraryPanel({ showBrowseLists = true, tapOnlyMode = false, read
       {tapOnlyMode && <TapOnlyNote />}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{filtered.length} shown</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing up to 80 results for performance.' : 'List hidden in survivor mode.'}</p>
+        <p className="eyebrow">{showResults ? `${filtered.length} shown` : 'Optional library list'}</p>
+        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing up to 80 results for performance.' : 'Closed for a calmer screen.'}</p>
       </div>
 
       {!showResults ? (
