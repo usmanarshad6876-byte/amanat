@@ -1,0 +1,28 @@
+.DS_Store
+node_modules/
+dist/
+
+# Local exports and source snapshots
+*.zip
+amanat.html
+Amanat.html
+amanat-trauma-react-app*/
+claude-design/
+
+# Older root-level copies kept locally during development
+/app.jsx
+/companion.jsx
+/content.js
+/i18n.js
+/icons.jsx
+/screens.jsx
+/shells.jsx
+/store.jsx
+/styles.css
+/tools.jsx
+/tweaks-panel.jsx
+
+# Logs and environment files
+*.log
+.env
+.env.*
