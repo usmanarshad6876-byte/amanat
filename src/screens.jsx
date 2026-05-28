@@ -16,24 +16,24 @@ function greeting(t) {
 
 const DAY_STATUS = {
   green: {
-    label: 'Settled',
-    eyebrow: 'Inside the window',
-    title: 'A good day to notice one pattern gently.',
+    label: 'Steady',
+    eyebrow: 'I feel steady enough',
+    title: 'A good moment to notice one pattern gently.',
     body: 'You do not need to dig. If you have room, read one card slowly or choose one small act of care.',
     action: 'Read a card',
     tone: 'safe',
   },
   amber: {
-    label: 'Edgy',
-    eyebrow: 'Near the edge',
+    label: 'Activated',
+    eyebrow: 'My body is activated',
     title: 'The body may need a smaller day.',
     body: 'Reduce demand. Pick one essential thing, one body step, and one boundary you do not have to explain.',
     action: 'Open rough-day plan',
     tone: 'amber',
   },
   red: {
-    label: 'Outside',
-    eyebrow: 'Outside the window',
+    label: 'Overwhelmed',
+    eyebrow: 'I feel overwhelmed',
     title: 'No major decisions right now.',
     body: 'First: feet, room, water, contact. Do not analyse trauma or send hard messages while flooded.',
     action: 'Start guided protocol',
@@ -195,11 +195,11 @@ function HomeStandard({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, o
       <div className="card reveal" style={{ marginTop: 18 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <p className="eyebrow">A quick mood</p>
-            <h3 className="display" style={{ fontSize: 22, marginTop: 4 }}>How are you arriving today?</h3>
+            <p className="eyebrow">Mood check</p>
+            <h3 className="display" style={{ fontSize: 22, marginTop: 4 }}>How do you feel right now?</h3>
           </div>
           {recent.length > 0 && (
-            <button className="btn btn-ghost btn-tiny" onClick={() => onNavigate('tools')}>See history <window.Icon name="chevronRight" size={14} /></button>
+            <button className="btn btn-ghost btn-tiny" onClick={() => onNavigate('tools', { sub: 'mood' })}>See mood history <window.Icon name="chevronRight" size={14} /></button>
           )}
         </div>
         <div className="cluster" style={{ gap: 10, marginTop: 16 }}>
@@ -231,7 +231,7 @@ function HomeStandard({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, o
             "{affirm}"
           </p>
           <div className="cluster" style={{ marginTop: 16 }}>
-            <button className="btn btn-soft btn-tiny" onClick={onOpenAffirm}>More</button>
+            <button className="btn btn-soft btn-tiny" onClick={onOpenAffirm}>More affirmations</button>
             <button className="btn btn-ghost btn-tiny" onClick={async () => { await window.copyToClipboard(affirm); alert('Copied.'); }}>
               <window.Icon name="copy" size={14} /> Copy
             </button>

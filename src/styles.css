@@ -1088,8 +1088,8 @@ p { margin: 0; max-width: 64ch; }
   color: var(--ink-muted);
   text-transform: uppercase;
 }
-.day-window-meter::before { content: 'Settled'; left: 12px; }
-.day-window-meter::after { content: 'Outside'; right: 12px; }
+.day-window-meter::before { content: 'Steady'; left: 12px; }
+.day-window-meter::after { content: 'Overwhelmed'; right: 12px; }
 .day-window-needle {
   position: absolute;
   left: 50%;
