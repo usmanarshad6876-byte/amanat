@@ -357,7 +357,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
         { id: 'guide',     label: "I don't know" },
         { id: 'unsafe',    label: 'I am not safe' },
         { id: 'coercion',  label: 'Being controlled' },
-        { id: 'dv',        label: 'Abuse plan' },
+        { id: 'dv',        label: 'Quiet safety plan' },
         { id: 'csa',       label: 'Past abuse' },
         { id: 'medical',   label: 'Body danger signs' },
         { id: 'privacy',   label: 'Shared phone safety' },
@@ -442,7 +442,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
             <ToolTile label="I don't know what I need" desc="Answer one safety question, then get one next step." icon="checkin" onClick={() => setTab('guide')} />
             <ToolTile label="I am not safe" desc="Use this for immediate danger, self-harm risk, being trapped, or severe dissociation." icon="crisis" onClick={() => setTab('unsafe')} />
             <ToolTile label="Someone is controlling me" desc="For monitoring, threats, forced choices, blocked exits, or fear of saying no." icon="shield" onClick={() => setTab('coercion')} />
-            <ToolTile label="I need an abuse safety plan" desc="Make a quiet safety plan without confrontation or disclosure." icon="shield" onClick={() => setTab('dv')} />
+            <ToolTile label="I need a quiet safety plan" desc="Make a private safety plan without confrontation or disclosure." icon="shield" onClick={() => setTab('dv')} />
             <ToolTile label="A past abuse memory came up" desc="Go slowly if childhood sexual abuse was named, remembered, or disclosed." icon="crisis" onClick={() => setTab('csa')} />
             <ToolTile label="My body may need medical help" desc="Check danger signs when symptoms may need urgent care, not only grounding." icon="phone" onClick={() => setTab('medical')} />
           </ToolSection>
@@ -2777,7 +2777,7 @@ function HelpScreen({ t, store, sub }) {
     { id: 'safety',    label: 'Safety & privacy' },
     { id: 'minors',    label: 'Minors' },
     { id: 'csa',       label: 'CSA support' },
-    { id: 'dv',        label: 'Abuse plan' },
+    { id: 'dv',        label: 'Quiet safety plan' },
     { id: 'medical',   label: 'Medical red flags' },
     { id: 'readiness', label: 'Prototype limits' },
     { id: 'partners',  label: 'For partners' },
