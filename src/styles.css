@@ -968,6 +968,13 @@ p { margin: 0; max-width: 64ch; }
   gap: 16px;
   margin-top: 4px;
 }
+.tool-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.08;
+  font-weight: 860;
+  color: var(--ink);
+}
 .tool-section + .tool-section {
   margin-top: 8px;
   padding-top: 8px;

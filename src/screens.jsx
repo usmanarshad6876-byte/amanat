@@ -272,7 +272,7 @@ function ToolSection({ title, intro, children }) {
   return (
     <section className="tool-section">
       <div>
-        <p className="eyebrow">{title}</p>
+        <h2 className="tool-section-title">{title}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 4 }}>{intro}</p>
       </div>
       <div className="grid-3">
@@ -439,12 +439,12 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       {tab === 'overview' && (
         <div className="stack reveal">
           <ToolSection title="I need help now" intro="For moments when you need one step, not a whole library.">
-            <ToolTile label="I don't know what I need" desc="A short guide: safety first, then one fitting next step." icon="checkin" onClick={() => setTab('guide')} />
-            <ToolTile label="I am not safe" desc="Physical danger, self-harm risk, coercion, or nowhere safe to be." icon="crisis" onClick={() => setTab('unsafe')} />
-            <ToolTile label="Someone is controlling me" desc="Monitoring, threats, forced choices, blocked exits, or pressure to stay quiet." icon="shield" onClick={() => setTab('coercion')} />
-            <ToolTile label="I need an abuse safety plan" desc="Planning without unsafe confrontation." icon="shield" onClick={() => setTab('dv')} />
-            <ToolTile label="A past abuse memory came up" desc="If childhood sexual abuse was named, remembered, or disclosed." icon="crisis" onClick={() => setTab('csa')} />
-            <ToolTile label="My body may need medical help" desc="When body symptoms need urgent care, not only grounding." icon="phone" onClick={() => setTab('medical')} />
+            <ToolTile label="I don't know what I need" desc="Answer one safety question, then get one next step." icon="checkin" onClick={() => setTab('guide')} />
+            <ToolTile label="I am not safe" desc="Use this for immediate danger, self-harm risk, being trapped, or severe dissociation." icon="crisis" onClick={() => setTab('unsafe')} />
+            <ToolTile label="Someone is controlling me" desc="For monitoring, threats, forced choices, blocked exits, or fear of saying no." icon="shield" onClick={() => setTab('coercion')} />
+            <ToolTile label="I need an abuse safety plan" desc="Make a quiet safety plan without confrontation or disclosure." icon="shield" onClick={() => setTab('dv')} />
+            <ToolTile label="A past abuse memory came up" desc="Go slowly if childhood sexual abuse was named, remembered, or disclosed." icon="crisis" onClick={() => setTab('csa')} />
+            <ToolTile label="My body may need medical help" desc="Check danger signs when symptoms may need urgent care, not only grounding." icon="phone" onClick={() => setTab('medical')} />
           </ToolSection>
 
           <ToolSection title="I need to calm my body" intro="Short tools for grounding before reflection.">
@@ -455,29 +455,29 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
           </ToolSection>
 
           <ToolSection title="I feel triggered" intro="Use these after the body has a little more room.">
-            <ToolTile label={t('tools.reframe')} desc={t('tools.reframeDesc')} icon="reframe" onClick={() => setTab('reframe')} />
-            <ToolTile label="Survivor cards" desc="Draw or search a survivor-facing trigger card." icon="journal" onClick={() => setTab('cards')} />
-            <ToolTile label="What my body may be doing" desc="Fight, flight, freeze, fawn, fix, fold, or feeling far away." icon="mood" onClick={() => setTab('profiles')} />
-            <ToolTile label="Shame spiral" desc="When the old story says I am wrong, guilty, or too much." icon="language" onClick={() => setTab('shame')} />
+            <ToolTile label="Reframe a thought" desc="Write one trauma thought and receive a gentler safety-based reframe." icon="reframe" onClick={() => setTab('reframe')} />
+            <ToolTile label="Survivor cards" desc="Draw one card for what may be happening now and what to try next." icon="journal" onClick={() => setTab('cards')} />
+            <ToolTile label="What my body may be doing" desc="Understand fight, flight, freeze, fawn, fix, collapse, or feeling far away." icon="mood" onClick={() => setTab('profiles')} />
+            <ToolTile label="Shame spiral" desc="Name the old shame story and find one repair step." icon="language" onClick={() => setTab('shame')} />
           </ToolSection>
 
           <ToolSection title="I need words to say" intro="Scripts and plans for boundaries, rough days, night, anger, grief, and good days.">
-            <ToolTile label="Boundary scripts" desc="Copy-ready scripts for naming needs and limits." icon="shield" onClick={() => setTab('boundaries')} />
-            <ToolTile label="Rough-day protocol" desc="Green, amber, and red plans for difficult days." icon="crisis" onClick={() => setTab('roughday')} />
-            <ToolTile label="Night safety plan" desc="Before-bed, during-night, and nightmare support." icon="breathing" onClick={() => setTab('night')} />
-            <ToolTile label="Anger and grief" desc="Safe anger permission, grief rituals, repair steps." icon="leaf" onClick={() => setTab('anger')} />
-            <ToolTile label="Good-day safety" desc="Practices for receiving ease, joy, and calm slowly." icon="leaf" onClick={() => setTab('goodday')} />
-            <ToolTile label={t('tools.affirm')} desc={t('tools.affirmDesc')} icon="leaf" onClick={() => setTab('affirm')} />
+            <ToolTile label="Boundary scripts" desc="Copy a sentence for saying no, asking for space, or naming a need." icon="shield" onClick={() => setTab('boundaries')} />
+            <ToolTile label="Rough-day plan" desc="Move through safe-enough, flooded, and urgent steps for a hard day." icon="crisis" onClick={() => setTab('roughday')} />
+            <ToolTile label="Night safety plan" desc="Use before-bed, during-night, or after-nightmare support." icon="breathing" onClick={() => setTab('night')} />
+            <ToolTile label="Anger and grief" desc="Validate anger and grief without turning them into harm." icon="leaf" onClick={() => setTab('anger')} />
+            <ToolTile label="Good-day safety" desc="Practice receiving calm, praise, love, or success slowly." icon="leaf" onClick={() => setTab('goodday')} />
+            <ToolTile label="Safe sentences" desc="Read short lines when you need steadiness without analysis." icon="leaf" onClick={() => setTab('affirm')} />
           </ToolSection>
 
           <ToolSection title="What this is connected to" intro="Culturally grounded pathways for the places and pressures that can make trauma louder.">
-            <ToolTile label="Environment safety" desc="Map places, privacy risks, exits, and redesign options." icon="grounding" onClick={() => setTab('environment')} />
-            <ToolTile label="Family pressure" desc="Honour, obedience, emotional blackmail, and safe routing." icon="partners" onClick={() => setTab('culture')} />
-            <ToolTile label="Religious guilt or spiritual comfort" desc="Faith-sensitive support without preaching or blame." icon="leaf" onClick={() => setTab('culture')} />
-            <ToolTile label="Marriage or relationship pressure" desc="Attachment wounds, in-laws, rishta pressure, needs, and repair scripts." icon="companion" onClick={() => setTab('relationships')} />
-            <ToolTile label="Workplace humiliation" desc="Feedback, hierarchy, public correction, office politics, and discreet grounding." icon="journal" onClick={() => setTab('workplace')} />
-            <ToolTile label="Night-time loneliness" desc="Before-bed, during-night, and nightmare support." icon="moon" onClick={() => setTab('night')} />
-            <ToolTile label="Safe intimacy" desc="Consent, pacing, pause signals, and aftercare." icon="shield" onClick={() => setTab('intimacy')} />
+            <ToolTile label="Place safety" desc="Check privacy, exits, sensory triggers, crowding, and safer adjustments." icon="grounding" onClick={() => setTab('environment')} />
+            <ToolTile label="Family pressure" desc="For honour, obedience, emotional blackmail, and safer family scripts." icon="partners" onClick={() => setTab('culture')} />
+            <ToolTile label="Religious guilt or spiritual comfort" desc="Find faith-sensitive words without preaching, blame, or forced patience." icon="leaf" onClick={() => setTab('culture')} />
+            <ToolTile label="Marriage or relationship pressure" desc="For rishta pressure, in-laws, abandonment fear, conflict, needs, and repair." icon="companion" onClick={() => setTab('relationships')} />
+            <ToolTile label="Workplace humiliation" desc="For feedback, hierarchy, public correction, deadlines, and discreet grounding." icon="journal" onClick={() => setTab('workplace')} />
+            <ToolTile label="Night-time loneliness" desc="Use night support when fear, loneliness, or memories get louder after dark." icon="moon" onClick={() => setTab('night')} />
+            <ToolTile label="Safe intimacy" desc="Support consent, pacing, pause signals, choice, and aftercare." icon="shield" onClick={() => setTab('intimacy')} />
           </ToolSection>
 
           {showResearch && (
@@ -732,7 +732,7 @@ function WhatNowPanel({ onSelectTab, onOpenTool }) {
 
       {safety && safety !== 'red' && (
         <div className="stack">
-          <p className="eyebrow">Pick what fits closest</p>
+          <h3 className="tool-section-title" style={{ fontSize: 22 }}>Pick what fits closest</h3>
           <div className="grid-2">
             {visibleChoices.map(([id, title, desc, target]) => (
               <button key={id} className={"card" + (need === id ? ' chip-active' : '')} style={{ textAlign: 'left' }} onClick={() => { setNeed(id); go(target); }}>
@@ -1416,9 +1416,9 @@ const RECOVERY_MODULE_CONFIGS = {
     ],
   },
   roughDay: {
-    eyebrow: 'Rough-day protocol',
-    title: 'Green, amber, and red plans for hard days.',
-    intro: 'A return-to-safety protocol for early warning signs, immediate actions, and next-day repair.',
+    eyebrow: 'Rough-day plan',
+    title: 'Safe-enough, flooded, and urgent steps for hard days.',
+    intro: 'A return-to-safety plan for early warning signs, immediate actions, and next-day repair.',
     drawLabel: 'Draw a rough-day card',
     placeholder: 'Search warning signs, plans, scripts...',
     visibility: 'Survivor-facing',
@@ -1427,9 +1427,9 @@ const RECOVERY_MODULE_CONFIGS = {
     sections: [
       ['Early warning signs', 'earlyWarnings', 'threat'],
       ['Immediate 3-minute action', 'action', 'safe'],
-      ['Green plan', 'greenPlan', 'safe'],
-      ['Amber plan', 'amberPlan', 'safe'],
-      ['Red plan', 'redPlan', 'threat'],
+      ['Safe-enough plan', 'greenPlan', 'safe'],
+      ['Flooded plan', 'amberPlan', 'safe'],
+      ['Urgent plan', 'redPlan', 'threat'],
       ['Support contact prompt', 'supportPrompt', 'safe'],
       ['Morning repair', 'repair', 'safe'],
     ],
@@ -1473,7 +1473,7 @@ const RECOVERY_MODULE_CONFIGS = {
   },
   environmentSafety: {
     eyebrow: 'Environment safety',
-    title: 'Map places, cues, exits, and safer redesign.',
+    title: 'Check places, cues, exits, and safer setup.',
     intro: 'Environmental safety maps for privacy risk, exposure risk, grounding, boundaries, and safer setup.',
     drawLabel: 'Draw an environment',
     placeholder: 'Search place, cue, exit, redesign...',
@@ -2360,7 +2360,7 @@ function CsaDisclosurePanel({ onOpenTool }) {
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--rose-wash), var(--paper-bright))' }}>
-        <p className="eyebrow" style={{ color: 'var(--crisis)' }}>CSA disclosure support</p>
+        <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Childhood sexual abuse disclosure support</p>
         <h2 className="display" style={{ fontSize: 30, marginTop: 6 }}>If childhood sexual abuse is named, go slowly and protect choice.</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>This app is not a forensic, legal, or medical service. It can help with immediate containment and routing to human support.</p>
         <div className="cluster" style={{ marginTop: 16 }}>
