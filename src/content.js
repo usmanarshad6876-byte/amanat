@@ -270,7 +270,7 @@ window.AMANAT_CONTENT = {
       'Afterward say: \u201CThat was hard. You are back now. I am here.\u201D',
     ] },
     { id: 'flooding', topic: 'Emotional flooding', steps: [
-      'Do not match the intensity. Your calm is the intervention.',
+      'Do not match the intensity. Your calm can be something steady they can borrow.',
       'Say: \u201CI can see you are overwhelmed. I am not going anywhere.\u201D',
       'Suggest a pause and agree when to return.',
       'Do not try to solve the argument while anyone is flooded.',

@@ -136,6 +136,11 @@ const ICON_PATHS = {
       <path d="M5 19c4-4 7-7 12-9" />
     </>
   ),
+  moon: (
+    <>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" />
+    </>
+  ),
   bookmark: (
     <>
       <path d="M6 4h12v17l-6-4-6 4z" />
