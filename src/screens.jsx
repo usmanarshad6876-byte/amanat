@@ -253,10 +253,10 @@ function HomeStandard({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, o
   );
 }
 
-function ToolTile({ label, desc, icon, onClick, tone }) {
+function ToolTile({ label, desc, icon, onClick, tone, anchor }) {
   const tileTone = tone || (icon === 'crisis' ? 'crisis' : 'default');
   return (
-    <button className={"tool-tile tool-tile-" + tileTone} onClick={onClick}>
+    <button className={"tool-tile tool-tile-" + tileTone} onClick={onClick} data-anchor={anchor || undefined}>
       <span className="tool-tile-icon">
         <window.Icon name={icon} size={20} />
       </span>
@@ -474,6 +474,7 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
+  const [cultureAnchor, setCultureAnchor] = useStateS(null);
   const [showRoughDayLibrary, setShowRoughDayLibrary] = useStateS(false);
   const firstVisit = useRefS(TOOLS_FIRST_VISIT_SESSION.current);
   const [firstVisitVersion, setFirstVisitVersion] = useStateS(0);
@@ -482,6 +483,10 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
   useEffectS(() => {
     if (!showResearch && tab === 'research') setTab('overview');
   }, [showResearch, tab]);
+  const openTab = (nextTab, options = {}) => {
+    setCultureAnchor(nextTab === 'culture' ? options.anchor || null : null);
+    setTab(nextTab);
+  };
   const dismissFirstVisit = (nextTab = 'overview') => {
     firstVisit.current = false;
     TOOLS_FIRST_VISIT_SESSION.current = false;
@@ -632,8 +637,8 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
 
           <ToolSection title="What this is connected to" intro="Culturally grounded pathways for the places and pressures that can make trauma louder.">
             <ToolTile label="Place safety" desc="Check privacy, exits, sensory triggers, crowding, and safer adjustments." icon="grounding" onClick={() => setTab('environment')} />
-            <ToolTile label="Family pressure" desc="For honour, obedience, emotional blackmail, and safer family scripts." icon="partners" onClick={() => setTab('culture')} />
-            <ToolTile label="Religious guilt or spiritual comfort" desc="Find faith-sensitive words without preaching, blame, or forced patience." icon="leaf" onClick={() => setTab('culture')} />
+            <ToolTile label="Family pressure" desc="For honour, obedience, emotional blackmail, and safer family scripts." icon="partners" anchor="family" onClick={() => openTab('culture', { anchor: 'family' })} />
+            <ToolTile label="Religious guilt or spiritual comfort" desc="Find faith-sensitive words without preaching, blame, or forced patience." icon="leaf" anchor="faith" onClick={() => openTab('culture', { anchor: 'faith' })} />
             <ToolTile label="Marriage or relationship pressure" desc="For rishta pressure, in-laws, abandonment fear, conflict, needs, and repair." icon="companion" onClick={() => setTab('relationships')} />
             <ToolTile label="Workplace humiliation" desc="For feedback, hierarchy, public correction, deadlines, and discreet grounding." icon="journal" onClick={() => setTab('workplace')} />
             <ToolTile label="Night-time loneliness" desc="Use night support when fear, loneliness, or memories get louder after dark." icon="moon" onClick={() => setTab('night')} />
@@ -675,7 +680,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       {!showSurvivorFirstVisit && tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" anchor={cultureAnchor} lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'relationships' && <ModuleLibraryPanel moduleKey="relationships" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'intimacy' && <ModuleLibraryPanel moduleKey="intimacy" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'workplace' && <ModuleLibraryPanel moduleKey="workplace" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
@@ -1946,10 +1951,12 @@ function PublicPathwayPanel() {
   );
 }
 
-function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = false, readAloud = false, showBrowseLists = true, onOpenTool, onUnsafe }) {
+function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tapOnlyMode = false, readAloud = false, showBrowseLists = true, onOpenTool, onUnsafe }) {
   const moduleData = window.AMANAT_RECOVERY_MODULES?.[moduleKey] || { meta: {}, items: [], support: {} };
   const config = RECOVERY_MODULE_CONFIGS[moduleKey] || {};
   const items = moduleData.items || [];
+  const familyAnchorRef = useRefS(null);
+  const faithAnchorRef = useRefS(null);
   const [query, setQuery] = useStateS('');
   const [filters, setFilters] = useStateS({});
   const [selectedId, setSelectedId] = useStateS(items[0]?.id || null);
@@ -1988,6 +1995,15 @@ function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = fals
   useEffectS(() => {
     if (filtered.length && !filtered.some(item => item.id === selectedId)) setSelectedId(filtered[0].id);
   }, [filtered, selectedId]);
+
+  useEffectS(() => {
+    if (moduleKey !== 'culture' || !anchor || !safetyGate || !selected) return undefined;
+    const ref = anchor === 'faith' ? faithAnchorRef : familyAnchorRef;
+    const timer = window.setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [moduleKey, anchor, safetyGate, selectedId, selected]);
 
   const drawItem = () => {
     const pool = filtered.length ? filtered : items;
@@ -2093,7 +2109,12 @@ function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = fals
 
           <div className="grid-2" style={{ marginTop: 12 }}>
             {visibleSections.map(([label, field, tone]) => selected[field] ? (
-              <div key={field + label} className={"phrase-row " + (tone || 'safe')} style={{ marginTop: 0 }}>
+              <div
+                key={field + label}
+                ref={moduleKey === 'culture' && field === 'familyCue' ? familyAnchorRef : moduleKey === 'culture' && field === 'faithReframe' ? faithAnchorRef : null}
+                className={"phrase-row " + (tone || 'safe')}
+                style={{ marginTop: 0 }}
+              >
                 <div className={"phrase-label " + (tone || 'safe')}>{label}</div>
                 <div className="phrase-text">{selected[field]}</div>
               </div>
