@@ -283,8 +283,8 @@ function shortContinuationReply(text, thread = []) {
   }
   if (feetDone) {
     return roman
-      ? 'Achha, paon floor par hain. Ab agla chhota qadam: apni nazar se room mein ek colour, ek edge, aur ek ordinary object naam lein. Aap ko aur explain karna zaroori nahi.'
-      : 'I hear you. Good, your feet are already on the floor. Next tiny step: name one colour, one edge, and one ordinary object in the room. You do not have to explain more.';
+      ? 'Good. Unhein wahan rehne dein. Paon ko halkay se floor mein press karein aur floor ko thora weight hold karne dein. Abhi explain karna zaroori nahi.'
+      : 'Good. Keep them there. Press them gently into the floor and let the floor hold some of the weight. You do not have to explain anything yet.';
   }
   if (lowSpeech) {
     return roman
