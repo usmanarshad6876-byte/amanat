@@ -523,7 +523,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
 
 function HiddenResultsCard({ count, label, onShow }) {
   return (
-    <div className="card-sunk" style={{ background: 'var(--forest-wash)' }}>
+    <div className="library-reveal">
       <p className="eyebrow" style={{ color: 'var(--forest)' }}>Optional library list</p>
       <p style={{ color: 'var(--ink-soft)', marginTop: 6 }}>
         A larger reference list is available if you want to browse. Survivor mode keeps it closed so this screen stays calmer.
@@ -867,13 +867,12 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} matching cards` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
-      </div>
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching cards" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching cards</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing first 60 below.</p>
+        </div>
         <div className="grid-2">
           {shown.map(card => (
             <button key={card.id} className="card" style={{ textAlign: 'left' }} onClick={() => setSelectedId(card.id)}>
@@ -887,7 +886,8 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
             </button>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1018,13 +1018,12 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} matching maps` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
-      </div>
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching maps" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching maps</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing first 60 below.</p>
+        </div>
         <div className="grid-2">
           {shown.map(card => (
             <button key={card.id} className="card" style={{ textAlign: 'left' }} onClick={() => setSelectedId(card.id)}>
@@ -1039,7 +1038,8 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
             </button>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1197,13 +1197,12 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} matching profiles` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 60 below.' : 'Closed for a calmer screen.'}</p>
-      </div>
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching profiles" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching profiles</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing first 60 below.</p>
+        </div>
         <div className="grid-2">
           {shown.map(card => (
             <button key={card.id} className="card" style={{ textAlign: 'left' }} onClick={() => setSelectedId(card.id)}>
@@ -1217,7 +1216,8 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
             </button>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1340,13 +1340,12 @@ function BoundaryScriptsPanel({ showBrowseLists = true, tapOnlyMode = false, rea
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} matching scripts` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'Closed for a calmer screen.'}</p>
-      </div>
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching scripts" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching scripts</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing first 80 below.</p>
+        </div>
         <div className="grid-2">
           {shown.map(item => (
             <button key={item.id} className="card" style={{ textAlign: 'left' }} onClick={() => setSelectedId(item.id)}>
@@ -1360,7 +1359,8 @@ function BoundaryScriptsPanel({ showBrowseLists = true, tapOnlyMode = false, rea
             </button>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -1964,13 +1964,12 @@ function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = fals
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} matching rows` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing first 80 below.' : 'Closed for a calmer screen.'}</p>
-      </div>
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching rows" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching entries</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing first 80 below.</p>
+        </div>
         <div className="grid-2">
           {shown.map(item => (
             <button key={item.id} className="card" style={{ textAlign: 'left' }} onClick={() => setSelectedId(item.id)}>
@@ -1988,7 +1987,8 @@ function ModuleLibraryPanel({ moduleKey, lowTextMode = false, tapOnlyMode = fals
             </button>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
     </div>
   );
 }
@@ -2062,14 +2062,12 @@ function TriggerLibraryPanel({ showBrowseLists = true, tapOnlyMode = false, read
       </div>
       {tapOnlyMode && <TapOnlyNote />}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <p className="eyebrow">{showResults ? `${filtered.length} shown` : 'Optional library list'}</p>
-        <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>{showResults ? 'Showing up to 80 results for performance.' : 'Closed for a calmer screen.'}</p>
-      </div>
-
-      {!showResults ? (
-        <HiddenResultsCard count={filtered.length} label="matching triggers" onShow={() => setShowResults(true)} />
-      ) : (
+      {showResults ? (
+        <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+          <p className="eyebrow">Matching triggers</p>
+          <p style={{ color: 'var(--ink-faint)', fontSize: 12 }}>Showing up to 80 results for performance.</p>
+        </div>
         <div className="grid-2">
           {filtered.map(item => (
             <div key={item.id + item.sourceSet} className="phrase-card trigger-result-card">
@@ -2104,7 +2102,8 @@ function TriggerLibraryPanel({ showBrowseLists = true, tapOnlyMode = false, read
             </div>
           ))}
         </div>
-      )}
+        </>
+      ) : null}
       {selectedTrigger && <TriggerDetailOverlay item={selectedTrigger} onClose={() => setSelectedTrigger(null)} readAloud={readAloud} />}
     </div>
   );
