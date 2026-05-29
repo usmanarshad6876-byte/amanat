@@ -278,8 +278,8 @@ function shortContinuationReply(text, thread = []) {
 
   if (acknowledged && hasContext) {
     return roman
-      ? 'Theek hai. Yeh iss moment ke liye kaafi hai. Bas ek aur saans ke liye paon zameen par mehsoos karein, phir room mein ek neutral cheez ka naam lein.'
-      : 'Good. That is enough for this moment. Stay with the floor for one more breath, then name one ordinary thing you can see.';
+      ? 'Theek hai. Is moment ke liye yeh enough hai. Ek aur saans ke liye floor ke saath stay karein. Trigger chest, stomach, throat, head, ya body ke kisi aur hissa mein feel ho raha hai?'
+      : 'Good. That is enough for this moment. Stay with the floor for one more breath. Is the trigger in your chest, stomach, throat, head, or somewhere else?';
   }
   if (feetDone) {
     return roman
