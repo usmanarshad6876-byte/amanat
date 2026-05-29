@@ -282,6 +282,97 @@ function ToolSection({ title, intro, children }) {
   );
 }
 
+const TOOL_FEELING_ENTRY_CONFIG = [
+  {
+    id: 'scared',
+    label: 'I am scared',
+    desc: 'Start with one body step before explaining.',
+    icon: 'grounding',
+    target: { type: 'tool', id: 'grounding' },
+  },
+  {
+    id: 'ashamed',
+    label: 'I feel ashamed',
+    desc: 'Name the shame spiral and find one kinder truth.',
+    icon: 'language',
+    target: { type: 'tab', id: 'shame' },
+  },
+  {
+    id: 'numb',
+    label: 'I am numb',
+    desc: 'Understand shutdown, freeze, or collapse gently.',
+    icon: 'mood',
+    target: { type: 'tab', id: 'profiles' },
+  },
+  {
+    id: 'angry',
+    label: 'I am angry',
+    desc: 'Give anger a safe route without making danger bigger.',
+    icon: 'leaf',
+    target: { type: 'tab', id: 'anger' },
+  },
+  {
+    id: 'alone',
+    label: 'I feel alone',
+    desc: 'Use night-time or loneliness support.',
+    icon: 'moon',
+    target: { type: 'tab', id: 'night' },
+  },
+  {
+    id: 'unknown',
+    label: "I don't know what's wrong with me",
+    desc: 'Let the app guide one small next step.',
+    icon: 'checkin',
+    target: { type: 'tab', id: 'guide' },
+  },
+  {
+    id: 'safer',
+    label: 'I want to feel safer',
+    desc: 'Check safety first, then choose support.',
+    icon: 'shield',
+    target: { type: 'tab', id: 'unsafe' },
+  },
+  {
+    id: 'breathe',
+    label: 'I just need to breathe',
+    desc: 'Open the breathing tool now.',
+    icon: 'breathing',
+    target: { type: 'tool', id: 'breathing' },
+  },
+];
+
+function FeelingEntryPanel({ onSelectTab, onOpenTool }) {
+  const openFeeling = (item) => {
+    if (item.target.type === 'tool') {
+      onOpenTool(item.target.id);
+      return;
+    }
+    onSelectTab(item.target.id);
+  };
+
+  return (
+    <section className="feeling-entry-panel reveal" aria-labelledby="feeling-entry-title">
+      <div className="section-header home-section-header">
+        <div>
+          <p className="section-eyebrow">How I feel right now</p>
+          <h2 id="feeling-entry-title" className="section-title">Start with the feeling.</h2>
+        </div>
+      </div>
+      <div className="feeling-entry-grid">
+        {TOOL_FEELING_ENTRY_CONFIG.map(item => (
+          <button key={item.id} className="feeling-entry-card" onClick={() => openFeeling(item)}>
+            <span className="feeling-entry-icon"><window.Icon name={item.icon} size={22} /></span>
+            <span className="feeling-entry-copy">
+              <strong>{item.label}</strong>
+              <small>{item.desc}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // HUB version of home — radial nodes
 function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpenTool, onOpenAffirm, onOpenPanic }) {
   const affirm = window.AMANAT_CONTENT.affirmations[store.state.affirmIdx % window.AMANAT_CONTENT.affirmations.length];
@@ -340,7 +431,8 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 // TOOLS screen — full surface for breathing/grounding/reframe + mood + affirmations
 // ────────────────────────────────────────────────────────────────────────────
 function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
-  const [tab, setTab] = useStateS(sub || 'overview');
+  const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
+  const [tab, setTab] = useStateS(sub || defaultTab);
   const showBrowseLists = userRole !== 'survivor';
   useEffectS(() => { if (sub) setTab(sub); }, [sub]);
   useEffectS(() => {
@@ -350,7 +442,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
   const toolGroups = [
     {
       id: 'now',
-      label: 'Help now',
+      label: 'Right now',
       desc: 'Safety, calming, and one next step.',
       tabs: [
         { id: 'overview',  label: 'Start here' },
@@ -369,7 +461,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
     },
     {
       id: 'patterns',
-      label: 'I feel triggered',
+      label: 'Understand',
       desc: 'Shame, triggers, body alarm, and old stories.',
       tabs: [
         { id: 'cards',     label: 'Survivor cards' },
@@ -382,7 +474,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
     },
     {
       id: 'repair',
-      label: 'I need words to say',
+      label: 'Repair',
       desc: 'Scripts and plans for hard or tender moments.',
       tabs: [
         { id: 'boundaries', label: 'Boundary scripts' },
@@ -394,7 +486,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
     },
     {
       id: 'contexts',
-      label: 'What this is about',
+      label: 'Life contexts',
       desc: 'Family, faith, work, relationships, and night.',
       tabs: [
         { id: 'environment', label: 'Place safety' },
@@ -420,6 +512,12 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
         <h1 className="page-title">Help me through this moment</h1>
         <p className="page-lede">{tapOnlyMode ? 'Tap one button. No typing needed.' : lowTextMode ? 'Pick one door. You can stop anytime.' : userRole === 'survivor' ? 'Start with safety, then one body step, one script, or one context. The larger libraries stay tucked away unless you open them.' : 'Start with safety, then choose the body, words, pattern, or life context that fits. Use any. Skip any.'}</p>
       </div>
+      <div className="tool-entry-mode reveal" aria-label="Tool entry modes">
+        <button className={"tool-entry-pill" + (tab === 'feelings' ? ' tool-entry-pill-active' : '')} onClick={() => setTab('feelings')}>
+          <window.Icon name="mood" size={18} />
+          <span>How I feel right now</span>
+        </button>
+      </div>
       <div className="tool-nav reveal">
         <div className="tool-group-nav" aria-label="Tool groups">
           {toolGroups.map(group => (
@@ -436,6 +534,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
         </div>
       </div>
 
+      {tab === 'feelings' && <FeelingEntryPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
       {tab === 'overview' && (
         <div className="stack reveal">
           <ToolSection title="I need help now" intro="For moments when you need one step, not a whole library.">

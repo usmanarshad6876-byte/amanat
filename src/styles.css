@@ -928,6 +928,39 @@ p { margin: 0; max-width: 64ch; }
 }
 
 /* ─── TOOLS NAVIGATION ────────────────────────────────────────────── */
+.tool-entry-mode {
+  margin-top: 16px;
+  display: flex;
+}
+.tool-entry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  border-radius: var(--r-pill);
+  padding: 10px 16px;
+  background: var(--paper-raised);
+  border: 1px solid var(--ink-line);
+  box-shadow: var(--shadow-paper);
+  color: var(--ink-soft);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 780;
+  transition: background var(--motion), border-color var(--motion), color var(--motion), transform var(--motion);
+}
+.tool-entry-pill:hover {
+  background: var(--paper-bright);
+  border-color: var(--ink-edge);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.tool-entry-pill-active {
+  background: var(--forest);
+  border-color: var(--forest-hover);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(47, 111, 115, 0.2);
+}
+.tool-entry-pill-active svg { stroke: #ffffff; }
 .tool-nav {
   margin-top: 16px;
   margin-bottom: 24px;
@@ -1069,6 +1102,64 @@ p { margin: 0; max-width: 64ch; }
 }
 .tool-tile-crisis .tool-tile-title {
   color: #6f201b;
+}
+.feeling-entry-panel {
+  display: grid;
+  gap: 16px;
+}
+.feeling-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.feeling-entry-card {
+  min-height: 116px;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 14px;
+  align-items: start;
+  text-align: left;
+  padding: 20px;
+  background: var(--paper-raised);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-paper);
+  transition: transform var(--motion), border-color var(--motion), box-shadow var(--motion), background var(--motion);
+}
+.feeling-entry-card:hover {
+  background: var(--paper-bright);
+  border-color: var(--ink-edge);
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-2px);
+}
+.feeling-entry-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--forest-wash);
+  color: var(--forest-hover);
+  border: 1px solid rgba(47, 111, 115, 0.18);
+}
+.feeling-entry-copy {
+  display: grid;
+  gap: 6px;
+}
+.feeling-entry-copy strong {
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.12;
+  font-weight: 850;
+  color: var(--ink);
+}
+.feeling-entry-copy small {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 560;
+  color: var(--ink-soft);
 }
 
 /* ─── DAY STATUS / WINDOW OF TOLERANCE ───────────────────────────── */
@@ -1243,6 +1334,13 @@ p { margin: 0; max-width: 64ch; }
     width: 30px;
     height: 30px;
     border-radius: 10px;
+  }
+  .feeling-entry-grid {
+    grid-template-columns: 1fr;
+  }
+  .feeling-entry-card {
+    min-height: 96px;
+    padding: 17px;
   }
 }
 
