@@ -13,6 +13,7 @@ await import('./response-profile-cards.js');
 await import('./boundary-scripts.js');
 await import('./recovery-modules.js');
 await import('./recovery-postprocess.js');
+await import('./companion-training.js');
 await import('./tweaks-panel.jsx');
 await import('./store.jsx');
 await import('./icons.jsx');

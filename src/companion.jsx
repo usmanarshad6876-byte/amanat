@@ -18,6 +18,8 @@ CRITICAL RULES — never violate:
 8. Reflect back what you heard in your own words, briefly. Then offer ONE of: a validating sentence, a soft question, or a tiny grounding suggestion.
 9. Honour the cultural context — Pakistan, family-system dynamics, stigma, and access realities — without assuming.
 10. Never break character to talk about yourself as an AI. If asked directly, say only: "I am a companion built into this app. I am not a therapist. I am here to listen."
+11. If the user writes in Roman Urdu or mixed English/Roman Urdu, reply in the same plain language style. Keep Roman Urdu simple, respectful, gender-inclusive where possible, and practical.
+12. Never use faith, family honour, sabr, or izzat to pressure silence. Faith-sensitive support must protect mercy, dignity, safety, and choice.
 
 Tone examples:
 - User: "I'm so tired of pretending I'm fine." → "That kind of tiredness is real. Pretending takes a lot of you. What would it be like to be a little less performance, right here, for a moment?"
@@ -104,6 +106,96 @@ function localCompanionReply(kind) {
   return replies[kind] || '';
 }
 
+const TRAINING_STOP_WORDS = new Set([
+  'the', 'and', 'for', 'with', 'from', 'that', 'this', 'what', 'when', 'where', 'who',
+  'someone', 'says', 'said', 'say', 'getting', 'triggered', 'amanat', 'right', 'now',
+  'mujhe', 'ki', 'ka', 'ke', 'ko', 'se', 'mein', 'main', 'hai', 'hain', 'ho', 'hona',
+  'hota', 'hoti', 'kya', 'abhi', 'wajah', 'say', 'kar', 'karein', 'mila', 'milna',
+]);
+
+const ROMAN_URDU_HINTS = [
+  'aap', 'mujhe', 'mera', 'meri', 'main', 'mein', 'nahi', 'nahin', 'kya', 'kyun',
+  'darr', 'sharam', 'ghussa', 'izzat', 'rishta', 'log kya kahenge', 'sabr',
+  'khamosh', 'madad', 'safe shakhs', 'foran', 'rabta', 'zabardasti',
+];
+
+function cueTokens(text) {
+  return normalizeText(text)
+    .split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length > 2 && !TRAINING_STOP_WORDS.has(w));
+}
+
+function looksRomanUrdu(text) {
+  const s = normalizeText(text);
+  return ROMAN_URDU_HINTS.some(term => s.includes(term));
+}
+
+function trainingScore(entry, inputNorm, inputTokens) {
+  const triggerNorm = normalizeText(entry.trigger || '');
+  const promptNorm = normalizeText(entry.userPrompt || '');
+  let score = 0;
+
+  if (triggerNorm && inputNorm.includes(triggerNorm)) score += 90;
+  if (promptNorm && promptNorm.includes(inputNorm) && inputNorm.length > 10) score += 25;
+
+  const triggerTokens = cueTokens(entry.trigger || '');
+  const promptTokens = cueTokens(entry.userPrompt || '');
+  const uniqueTokens = [...new Set([...triggerTokens, ...promptTokens])];
+  const hits = uniqueTokens.filter(token => inputTokens.has(token));
+  const triggerHits = triggerTokens.filter(token => inputTokens.has(token));
+
+  if (triggerHits.length >= Math.min(2, triggerTokens.length)) {
+    score += 24 + triggerHits.length * 8;
+  }
+  if (hits.length >= 3) score += hits.length * 4;
+
+  return score;
+}
+
+function matchTrainingReply(text) {
+  const entries = window.AMANAT_COMPANION_TRAINING || [];
+  if (!entries.length) return null;
+
+  const inputNorm = normalizeText(text);
+  const inputTokens = new Set(cueTokens(text));
+  if (!inputTokens.size) return null;
+
+  const wantsRomanUrdu = looksRomanUrdu(text);
+  const ranked = entries
+    .map(entry => {
+      const languageBoost = wantsRomanUrdu
+        ? (entry.language === 'Roman Urdu' ? 18 : 0)
+        : (entry.language === 'English' ? 12 : 0);
+      return { entry, score: trainingScore(entry, inputNorm, inputTokens) + languageBoost };
+    })
+    .filter(item => item.score >= 42)
+    .sort((a, b) => b.score - a.score);
+
+  return ranked[0]?.entry || null;
+}
+
+function trainingReply(entry, text) {
+  const wantsRomanUrdu = entry.language === 'Roman Urdu' || looksRomanUrdu(text);
+  const riskNote = entry.risk === 'high'
+    ? (wantsRomanUrdu
+      ? 'Agar is mein foran khatra, harm, coercion, ya self-harm ka risk ho, to abhi trusted safe shakhs ya emergency support se rabta karein.'
+      : 'If there is any immediate danger, coercion, harm, or self-harm risk here, contact a trusted person or emergency support now.')
+    : '';
+
+  if (wantsRomanUrdu) {
+    const story = entry.oldStory ? `Purani story keh sakti hai: “${entry.oldStory}” — lekin yeh alarm hai, final proof nahi.` : 'Yeh purana alarm ho sakta hai, final proof nahi.';
+    const body = entry.body ? `Body signal: ${entry.body}.` : '';
+    const action = entry.action ? `Abhi pehla qadam: ${entry.action}` : 'Abhi pehla qadam: pause, dono paon zameen par, aur 5 neutral facts naam lein.';
+    return [`Aap ne is cue ko naam diya: ${entry.trigger}.`, story, body, action, riskNote].filter(Boolean).join(' ');
+  }
+
+  const story = entry.oldStory ? `The old story may be: “${entry.oldStory}” but this is an alarm, not final proof.` : 'This may be an old alarm, not final proof.';
+  const body = entry.body ? `Your body may show it as ${entry.body}.` : '';
+  const action = entry.action ? `First step: ${entry.action}` : 'First step: pause, put both feet on the floor, and name five neutral facts.';
+  return [`I hear the cue: ${entry.trigger}.`, story, body, action, riskNote].filter(Boolean).join(' ');
+}
+
 function localSupportReply(text, thread = []) {
   const s = normalizeText(text);
   const has = (patterns) => patterns.some((p) => p.test(s));
@@ -139,6 +231,11 @@ function localSupportReply(text, thread = []) {
   }
   if (has([/\b(tonight|night|bed|sleep|nightmare|alone at night|scared tonight)\b/])) {
     return 'Tonight needs a smaller plan, not a perfect one. Keep a light or familiar sound on if it helps, put water nearby, and choose one person or service you could contact if the night gets unsafe.';
+  }
+
+  const trainingEntry = matchTrainingReply(text);
+  if (trainingEntry) {
+    return trainingReply(trainingEntry, text);
   }
 
   if (has([/\b(ashamed|a shamed|shame|shamed|guilty|guilt|burden|too much|my fault|responsible)\b/])) {
@@ -195,6 +292,11 @@ function Companion({ thread, onAddMsg, onClear, t }) {
       onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind), at: Date.now(), safetyKind: localSafetyKind });
       return;
     }
+    const trainingEntry = matchTrainingReply(text);
+    if (trainingEntry) {
+      onAddMsg({ role: 'them', text: trainingReply(trainingEntry, text), at: Date.now(), trainingId: trainingEntry.id });
+      return;
+    }
     setThinking(true);
     try {
       if (!window.claude?.complete) {
@@ -225,6 +327,7 @@ function Companion({ thread, onAddMsg, onClear, t }) {
   const seeds = [
     'I don\u2019t know where to start.',
     'I need support.',
+    'Seen message with no reply.',
     'Something just happened.',
     'I keep replaying it.',
   ];
