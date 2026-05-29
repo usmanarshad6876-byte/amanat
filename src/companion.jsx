@@ -196,6 +196,29 @@ function trainingReply(entry, text) {
   return [`I hear the cue: ${entry.trigger}.`, story, body, action, riskNote].filter(Boolean).join(' ');
 }
 
+function boundaryScriptReply(text, thread = []) {
+  const conversationText = normalizeText([
+    ...thread.slice(-6).map(m => m.text),
+    text,
+  ].join(' '));
+  const asksForBoundary = /\b(boundary|boundry|boundaries|script|words|what to say|say to them|line to say|give me the line|give me the words)\b/.test(conversationText);
+  if (!asksForBoundary) return '';
+
+  if (/\b(mother in law|motherinlaw|in law|in laws|saas|susral|joint family)\b/.test(conversationText)) {
+    return 'Here is a gentle boundary you can use: “I hear you. I need a little space right now, so I am going to pause and come back to this later.” If direct words may create more conflict, make it smaller: “I need to rest for a bit.”';
+  }
+  if (/\b(family|mother|father|parent|parents|elder|relative|home|izzat|honour|honor|log kya kahenge)\b/.test(conversationText)) {
+    return 'You can keep it simple: “I understand this matters to you. I still need my boundary to be respected.” If it feels unsafe to be firm, use a softer exit: “I cannot discuss this well right now. I need a pause.”';
+  }
+  if (/\b(partner|husband|wife|boyfriend|girlfriend|relationship|reply|text)\b/.test(conversationText)) {
+    return 'You could say: “I want to talk, but I need us to slow down. Please tell me the topic and when we can discuss it calmly.”';
+  }
+  if (/\b(work|boss|supervisor|manager|colleague|office|deadline|feedback)\b/.test(conversationText)) {
+    return 'A work-safe line could be: “I want to respond properly. Could you share the specific next step or priority so I can act on it?”';
+  }
+  return 'A simple boundary can be enough: “I need a pause. I will come back to this when I can think clearly.” You do not have to explain everything while your body is overwhelmed.';
+}
+
 function localSupportReply(text, thread = []) {
   const s = normalizeText(text);
   const has = (patterns) => patterns.some((p) => p.test(s));
@@ -216,6 +239,10 @@ function localSupportReply(text, thread = []) {
   }
   if (has([/\b(are you crazy|crazy|stupid|wrong|irrelevant|not relevant|doesn'?t make sense|does not make sense)\b/])) {
     return 'You are right to call that out. That reply did not meet you well. Let me reset: what is the actual question or feeling you want me to answer?';
+  }
+  const boundaryReply = boundaryScriptReply(text, thread);
+  if (boundaryReply) {
+    return boundaryReply;
   }
   if (has([/\b(help|help me|need help|need support|support me|i need support|i need help|please help|what should i do|don'?t know what i need|do not know what i need)\b/])) {
     return 'I can help you choose the next small step. Pick one: get safe, calm your body, find words to say, or just sit here with me. If you are in danger or might hurt yourself, use the red safety button or contact a trusted person now.';
@@ -290,6 +317,11 @@ function Companion({ thread, onAddMsg, onClear, t }) {
     onAddMsg({ role: 'me', text, at: Date.now() });
     if (localSafetyKind) {
       onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind), at: Date.now(), safetyKind: localSafetyKind });
+      return;
+    }
+    const boundaryReply = boundaryScriptReply(text, thread);
+    if (boundaryReply) {
+      onAddMsg({ role: 'them', text: boundaryReply, at: Date.now(), localKind: 'boundary' });
       return;
     }
     const trainingEntry = matchTrainingReply(text);
