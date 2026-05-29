@@ -3,6 +3,45 @@
 
 import React from 'react';
 
+const COMPANION_FOOTER_HELPLINES = [
+  { label: 'Call Umang', number: '0311-7786264', tel: '03117786264' },
+  { label: 'Call Rozan', number: '0304-111-1741', tel: '03041111741' },
+  { label: 'Emergency', number: '1122', tel: '1122' },
+  { label: 'Police', number: '15', tel: '15' },
+  { label: 'Edhi', number: '115', tel: '115' },
+];
+
+function isLikelyMobileDevice() {
+  return typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+}
+
+async function copyHelplineNumber(number) {
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(number);
+    else await window.copyToClipboard(number);
+    window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Number copied — dial on your phone' }));
+  } catch (err) {
+    const ok = await window.copyToClipboard(number);
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Number copied — dial on your phone' }));
+  }
+}
+
+function FooterHelplineButton({ label, number, tel }) {
+  const text = `${label} · ${number}`;
+  if (isLikelyMobileDevice()) {
+    return (
+      <a className="btn btn-ghost btn-tiny" href={`tel:${tel}`}>
+        <window.Icon name="phone" size={14} /> {text}
+      </a>
+    );
+  }
+  return (
+    <button className="btn btn-ghost btn-tiny" type="button" onClick={() => copyHelplineNumber(number)}>
+      <window.Icon name="copy" size={14} /> {text}
+    </button>
+  );
+}
+
 const COMPANION_SYSTEM = `You are "Companion" inside a private mental health prototype called Amanat, built for survivors of childhood emotional abuse and neglect in Pakistan.
 
 Your role: a calm, trauma-informed reflective listener. You are NOT a therapist. You are NOT a crisis service. You are a presence that helps the user feel heard and gently noticed.
@@ -639,6 +678,10 @@ function Companion({ thread, onAddMsg, onClear, t, persistLocal = false }) {
           : 'Chat is not saved by default and disappears on refresh or close. Messages may be sent to a model service for replies. '}
         <a href="#" onClick={(e) => { e.preventDefault(); onClear(); }}>Clear local chat now</a>.
       </p>
+
+      <div className="cluster" style={{ justifyContent: 'center', gap: 6, marginTop: 4 }} aria-label="Urgent support numbers">
+        {COMPANION_FOOTER_HELPLINES.map(call => <FooterHelplineButton key={call.tel} {...call} />)}
+      </div>
 
       {err && <p style={{ fontSize: 13, color: 'var(--rose)' }}>{err}</p>}
     </div>

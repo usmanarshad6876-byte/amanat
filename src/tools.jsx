@@ -5,6 +5,45 @@ import React from 'react';
 
 const { useState: useStateT, useEffect: useEffectT, useRef: useRefT, useMemo: useMemoT } = React;
 
+const CRISIS_CALLS = [
+  { label: 'Call Umang', number: '0311-7786264', tel: '03117786264', tone: 'crisis' },
+  { label: 'Call Rozan', number: '0304-111-1741', tel: '03041111741' },
+  { label: 'Emergency', number: '1122', tel: '1122' },
+  { label: 'Police', number: '15', tel: '15' },
+  { label: 'Edhi', number: '115', tel: '115' },
+];
+
+function isLikelyMobileDevice() {
+  return typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+}
+
+async function copyHelplineNumber(number) {
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(number);
+    else await window.copyToClipboard(number);
+    window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Number copied — dial on your phone' }));
+  } catch (err) {
+    const ok = await window.copyToClipboard(number);
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Number copied — dial on your phone' }));
+  }
+}
+
+function HelplineCallButton({ label, number, tel, className, iconSize = 16 }) {
+  const text = `${label} · ${number}`;
+  if (isLikelyMobileDevice()) {
+    return (
+      <a className={className} href={`tel:${tel}`}>
+        <window.Icon name="phone" size={iconSize} /> {text}
+      </a>
+    );
+  }
+  return (
+    <button className={className} type="button" onClick={() => copyHelplineNumber(number)}>
+      <window.Icon name="copy" size={iconSize} /> {text}
+    </button>
+  );
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // BoxBreathing
 // ────────────────────────────────────────────────────────────────────────────
@@ -529,21 +568,14 @@ function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
             <li>Call one real person now. Stay connected until the danger has passed.</li>
           </ol>
           <div className="stack">
-            <a className="btn btn-crisis btn-large btn-block" href="tel:03117786264">
-              <window.Icon name="phone" size={18} /> Call Umang · 0311-7786264
-            </a>
-            <a className="btn btn-soft btn-block" href="tel:03041111741">
-              <window.Icon name="phone" size={16} /> Call Rozan · 0304-111-1741
-            </a>
-            <a className="btn btn-soft btn-block" href="tel:1122">
-              <window.Icon name="phone" size={16} /> Emergency · 1122
-            </a>
-            <a className="btn btn-soft btn-block" href="tel:15">
-              <window.Icon name="phone" size={16} /> Police · 15
-            </a>
-            <a className="btn btn-soft btn-block" href="tel:115">
-              <window.Icon name="phone" size={16} /> Edhi · 115
-            </a>
+            {CRISIS_CALLS.map(call => (
+              <HelplineCallButton
+                key={call.tel}
+                {...call}
+                className={call.tone === 'crisis' ? 'btn btn-crisis btn-large btn-block' : 'btn btn-soft btn-block'}
+                iconSize={call.tone === 'crisis' ? 18 : 16}
+              />
+            ))}
             <button className="btn btn-ghost btn-block" onClick={() => setShowOffline(true)}>
               I still can't reach anyone
             </button>
