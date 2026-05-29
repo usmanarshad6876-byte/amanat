@@ -468,6 +468,13 @@ function CheckIn({ onClose, onLogMood, onNavigate }) {
 // DangerNow — physical safety before emotional grounding.
 // ────────────────────────────────────────────────────────────────────────────
 function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
+  const [showOffline, setShowOffline] = useStateT(false);
+  const trustedMessage = 'I am not safe. I cannot explain right now. Please call me or help me reach a safer place.';
+  const copyTrustedMessage = async () => {
+    const ok = await window.copyToClipboard(trustedMessage);
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Safety message copied.' }));
+  };
+
   return (
     <div className="modal-overlay" role="dialog" aria-label="I am not safe">
       <div className="modal" style={{ maxWidth: 560, background: 'var(--paper-bright)' }}>
@@ -507,7 +514,32 @@ function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
             <a className="btn btn-soft btn-block" href="tel:115">
               <window.Icon name="phone" size={16} /> Edhi · 115
             </a>
+            <button className="btn btn-ghost btn-block" onClick={() => setShowOffline(true)}>
+              I still can't reach anyone
+            </button>
           </div>
+          {showOffline && (
+            <div className="card-sunk" style={{ background: 'var(--paper-bright)', marginTop: 14 }}>
+              <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Offline safety card</p>
+              <ol style={{ paddingLeft: 20, margin: '8px 0 0', color: 'var(--ink-soft)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <li>Leave the room if you can. If leaving is not possible, lock the door or move closer to an exit, light, or another person.</li>
+                <li>Name 5 things you can see. Keep your eyes moving around the room.</li>
+                <li>Copy this message and text it to a trusted contact when you can.</li>
+              </ol>
+              <div className="phrase-card" style={{ marginTop: 12 }}>
+                <div className="phrase-label safe">Message to copy</div>
+                <div className="phrase-text">"{trustedMessage}"</div>
+              </div>
+              <div className="cluster" style={{ marginTop: 12 }}>
+                <button className="btn btn-forest btn-tiny" onClick={copyTrustedMessage}>
+                  <window.Icon name="copy" size={14} /> Copy message
+                </button>
+                <a className="btn btn-soft btn-tiny" href={`sms:?&body=${encodeURIComponent(trustedMessage)}`}>
+                  <window.Icon name="send" size={14} /> Open text
+                </a>
+              </div>
+            </div>
+          )}
           <div className="divider-dotted" />
           <p className="eyebrow" style={{ marginBottom: 8 }}>If you need the screen to look neutral</p>
           <div className="stack">

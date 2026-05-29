@@ -2280,6 +2280,13 @@ function TriggerDetailOverlay({ item, onClose, readAloud }) {
 }
 
 function NotSafePanel({ onOpenTool, safetyLanguage = 'english', lowTextMode = false }) {
+  const [showOfflineCard, setShowOfflineCard] = useStateS(false);
+  const trustedMessage = 'I am not safe. I cannot explain right now. Please call me or help me reach a safer place.';
+  const copyTrustedMessage = async () => {
+    const ok = await window.copyToClipboard(trustedMessage);
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Safety message copied.' }));
+  };
+
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--rose-wash), var(--paper-bright))' }}>
@@ -2292,8 +2299,33 @@ function NotSafePanel({ onOpenTool, safetyLanguage = 'english', lowTextMode = fa
           <button className="btn btn-crisis" onClick={() => onOpenTool('danger')}><window.Icon name="crisis" size={16} /> Open urgent safety flow</button>
           <a className="btn btn-soft" href="tel:1122"><window.Icon name="phone" size={16} /> Call 1122</a>
           <a className="btn btn-soft" href="tel:15"><window.Icon name="phone" size={16} /> Call 15</a>
+          <button className="btn btn-ghost" onClick={() => setShowOfflineCard(true)}>I still can't reach anyone</button>
         </div>
       </div>
+
+      {showOfflineCard && (
+        <div className="card-tactile" style={{ background: 'var(--paper-bright)' }}>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Offline safety card</p>
+          <h3 className="display" style={{ fontSize: 24, marginTop: 6 }}>Use only the next few minutes.</h3>
+          <ol style={{ paddingLeft: 22, margin: '12px 0 0', color: 'var(--ink-soft)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <li>Leave the room if you can. If leaving is not possible, lock the door or move closer to an exit, light, or another person.</li>
+            <li>Name 5 things you can see. Keep your eyes moving around the room.</li>
+            <li>Copy this message and text it to a trusted contact when you can.</li>
+          </ol>
+          <div className="phrase-card" style={{ marginTop: 14 }}>
+            <div className="phrase-label safe">Message to copy</div>
+            <div className="phrase-text">"{trustedMessage}"</div>
+          </div>
+          <div className="cluster" style={{ marginTop: 14 }}>
+            <button className="btn btn-forest btn-tiny" onClick={copyTrustedMessage}>
+              <window.Icon name="copy" size={14} /> Copy message
+            </button>
+            <a className="btn btn-soft btn-tiny" href={`sms:?&body=${encodeURIComponent(trustedMessage)}`}>
+              <window.Icon name="send" size={14} /> Open text
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="grid-2">
         <div className="card">
