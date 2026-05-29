@@ -32,9 +32,30 @@ function normalizeText(text) {
   return text.toLowerCase().replace(/[’‘]/g, "'").replace(/[^\w\s\u0600-\u06FF']/g, ' ');
 }
 
+const ROMAN_URDU_HINTS = [
+  'aap', 'ap', 'mujhe', 'mera', 'meri', 'mere', 'main', 'mein', 'nahi', 'nahin',
+  'kya', 'kyun', 'kaise', 'theek', 'haan', 'ji', 'paon', 'pehle', 'zameen',
+  'darr', 'sharam', 'ghussa', 'izzat', 'rishta', 'log kya kahenge', 'sabr',
+  'khamosh', 'madad', 'safe shakhs', 'foran', 'rabta', 'zabardasti', 'dhamki',
+  'dil nahi', 'baat karne', 'kahun', 'kahe', 'ho raha', 'jata', 'jati',
+];
+
+function looksRomanUrdu(text) {
+  const s = normalizeText(text);
+  return ROMAN_URDU_HINTS.some(term => s.includes(term));
+}
+
+function isAppPrivacyQuestion(text) {
+  const s = normalizeText(text);
+  const asksAboutAppData = /\b(are you sending|sent anywhere|where does this go|who can see|store this|save this|saved here|journal storage|data|remote model|model trace|delete chat|erase chat|privacy policy|app privacy|is this private|private app|local storage|browser session)\b/.test(s)
+    || /\b(kahin bhej|kahan jata|kahan jaata|kaun dekh sakta|save hota|delete hota|data kahan|app private|chat save)\b/.test(s);
+  const situationalPrivacy = /\b(joint family|lack of privacy|private message|male supervisor|supervisor private|privacy ki kami|ghar mein privacy|susral|saas|in law|in laws)\b/.test(s);
+  return asksAboutAppData && !situationalPrivacy;
+}
+
 function detectLocalSafety(text) {
   const sharedKind = window.AMANAT_SAFETY?.detect(text);
-  if (sharedKind) return sharedKind;
+  if (sharedKind && (sharedKind !== 'privacy' || isAppPrivacyQuestion(text))) return sharedKind;
   const s = normalizeText(text);
   const has = (patterns) => patterns.some((p) => p.test(s));
 
@@ -72,7 +93,7 @@ function detectLocalSafety(text) {
     /\b(uncle touched me|touched me when i was little|molested|sexual abuse|sexually abused|raped|assaulted)\b/,
   ])) return 'csa';
 
-  if (has([
+  if (isAppPrivacyQuestion(text) && has([
     /\b(are you sending|sent anywhere|where does this go|privacy|private|store this|remote model|model trace|who can see)\b/,
     /\b(kahin bhej|kahan jata|kahan jaata|private hai|kaun dekh sakta|save hota)\b/,
     /(کہیں بھیج|کہاں جاتا|پرائیویٹ|کون دیکھ|محفوظ ہوتا)/,
@@ -89,12 +110,30 @@ function detectLocalSafety(text) {
   return null;
 }
 
-function localCompanionReply(kind) {
-  const crisis = 'Umang 0311-7786264, Rozan 0304-111-1741, Emergency 1122, Edhi 115.';
+function localCompanionReply(kind, text = '') {
+  const roman = looksRomanUrdu(text);
+  const crisis = 'Umang 0311-7786264, Rozan 0304-111-1741, Emergency 1122, Police 15, Edhi 115.';
+  if (roman) {
+    const replies = {
+      suicide: `Yeh bohat heavy aur urgent moment hai. Safety pehle: isay akelay handle na karein, abhi kisi trusted safe shakhs ko message/call karein; agar aap act kar sakte/sakti hain to emergency support se rabta karein: ${crisis} Jo cheez nuksan ke liye use ho sakti hai us se door ho jayein.`,
+      selfHarm: `Yeh urgent safety moment hai, aur aap ko isay akelay hold nahi karna. Safety pehle: blades, pills, cords ya kisi bhi risky cheez se distance banayein, abhi ek trusted safe shakhs ko call/message karein; agar risk abhi hai to emergency support: ${crisis}`,
+      activeDanger: `Yeh safety situation lag rahi hai. Safety pehle: agar koi dhamki de raha/rahi hai, to logon, roshni, exit, lock, ya safer jagah ki taraf move karein aur abhi trusted safe shakhs ya emergency support se rabta karein: ${crisis}`,
+      coercion: `Control, monitoring, dhamki, ya zabardasti safety issue hai. Agar confrontation se danger barh sakta hai to confront na karein; neutral excuse use karke safer jagah/person ki taraf move karein aur trusted support se rabta karein: ${crisis}`,
+      dissociation: 'Aap ne naam diya, yeh pehla qadam hai. Aaj ki tareekh, jis room mein hain, aur ek neutral cheez ka naam lein. Dono paon zameen par press karein; abhi kahani analyse karna zaroori nahi.',
+      panic: 'Panic body ko bohat dara sakta hai. Abhi pehla qadam: dono paon zameen par, teen cheezen dekhein, aur ek slow breath lein. Agar chest pain severe/new ho ya saans bohat mushkil ho, medical help lein.',
+      flashback: 'Yeh memory/body alarm ho sakta hai, final proof nahi ke aap wahan wapas hain. Aaj ki tareekh, room ka naam, aur ek object jo us waqt nahi tha naam lein.',
+      csa: 'Main aap par yaqeen karta/karti hoon. Jo hua woh aap ki ghalti nahi thi, aur yahan details dena zaroori nahi. Safety aur support pehle: ek trusted safe shakhs, Sahil/Rozan/Umang, ya trauma-informed professional se rabta karein.',
+      privacy: 'Privacy ke baare mein seedhi baat: mood/journal is browser session/device mein rehte hain agar persistence on ho. Companion/Reframe reply banane ke liye text model service ko bhej sakte hain. Agar device shared hai to sensitive details na likhein.',
+      adviceBoundary: 'Yeh bara decision hai, aur main ek message se aap ki zindagi direct nahi karunga/karungi. Isay chhota karte hain: kaunsa contact unsafe hai, kaunsa tolerable hai, aur aglay haftay ke liye ek protective boundary kya ho sakti hai?',
+      anger: 'Ghussa signal ho sakta hai ke kuch important violate hua. Abhi isay safe route dein: line likhein, body ko move karein, ya ek boundary choose karein jo danger na barhaye.',
+    };
+    return replies[kind] || '';
+  }
   const replies = {
-    suicide: `I am really glad you said this here. Please do not stay alone with this: call or message one real person now, and if you might act on it, contact emergency support now: ${crisis} Move away from anything you could use to hurt yourself while you make that contact.`,
-    selfHarm: `This is an urgent moment, not a moment to handle alone. Put distance between you and blades, pills, cords, or anything you could use, then call or message one real person now; if you might act tonight, use emergency support: ${crisis}`,
-    activeDanger: `I cannot know that you are safe right now. If someone is threatening you, move toward people, light, an exit, or a lock if you can, keep your phone with you, and call a trusted person or emergency support: ${crisis}`,
+    suicide: `I am really glad you said this here. Safety comes first: please do not stay alone with this. Call or message one trusted person now, move away from anything you could use to hurt yourself, and if you might act on it, contact emergency support now: ${crisis}`,
+    selfHarm: `I am glad you named this. Safety comes first, and this is not a moment to handle alone. Put distance between you and blades, pills, cords, or anything risky, then call/message one trusted person now; if you might act tonight, use emergency support: ${crisis}`,
+    activeDanger: `That sounds frightening, and safety comes first. If someone is threatening you, move toward people, light, an exit, or a lock if you can, keep your phone with you, and call a trusted person or emergency support now: ${crisis}`,
+    coercion: `That sounds controlling and unsafe. Safety comes first: do not confront if it could increase danger; move toward a safer person or place if you can, and contact trusted support or emergency help now: ${crisis}`,
     dissociation: 'Let us find today. Name the date, then the room you are in, then press your feet into the floor. Look for one object with an edge, one object with a colour, and one sound that belongs to this moment.',
     panic: 'Chest tightness can feel frightening. You can choose: breathe slowly if that feels okay, orient to three objects in the room, or call/message someone if you feel unsafe. If chest pain is severe, new, or comes with fainting or trouble breathing, seek medical help.',
     flashback: 'That smell can be a memory signal, and it can feel very present. Look around for three pieces of evidence that this is today: the date, the room, and one object that was not there back then.',
@@ -113,22 +152,11 @@ const TRAINING_STOP_WORDS = new Set([
   'hota', 'hoti', 'kya', 'abhi', 'wajah', 'say', 'kar', 'karein', 'mila', 'milna',
 ]);
 
-const ROMAN_URDU_HINTS = [
-  'aap', 'mujhe', 'mera', 'meri', 'main', 'mein', 'nahi', 'nahin', 'kya', 'kyun',
-  'darr', 'sharam', 'ghussa', 'izzat', 'rishta', 'log kya kahenge', 'sabr',
-  'khamosh', 'madad', 'safe shakhs', 'foran', 'rabta', 'zabardasti',
-];
-
 function cueTokens(text) {
   return normalizeText(text)
     .split(/\s+/)
     .map(w => w.trim())
     .filter(w => w.length > 2 && !TRAINING_STOP_WORDS.has(w));
-}
-
-function looksRomanUrdu(text) {
-  const s = normalizeText(text);
-  return ROMAN_URDU_HINTS.some(term => s.includes(term));
 }
 
 function trainingScore(entry, inputNorm, inputTokens) {
@@ -219,6 +247,108 @@ function boundaryScriptReply(text, thread = []) {
   return 'A simple boundary can be enough: “I need a pause. I will come back to this when I can think clearly.” You do not have to explain everything while your body is overwhelmed.';
 }
 
+function supporterModeReply(text) {
+  const s = normalizeText(text);
+  const roman = looksRomanUrdu(text);
+  const supporter = /\b(someone i care about|what should i say|main kya kahun|kya kahun|jis shakhs ki mujhe fikr)\b/.test(s);
+  if (!supporter) return '';
+
+  if (/\b(joint family|privacy ki kami|lack of privacy|susral|saas|in law|in laws)\b/.test(s)) {
+    return roman
+      ? 'Aap unhein yeh keh sakte/sakti hain: “Mujhe samajh aa raha hai ke privacy na milna body ko alert kar sakta hai. Pehla qadam: hum ek chhota safe pause lete hain; aap ko explain karna zaroori nahi.” Agar danger ho to trusted safe shakhs/emergency support se rabta karein.'
+      : 'I hear that you want to support them well. You can say: “I can understand why lack of privacy would make your body feel on alert. First step: let us take one small safe pause; you do not have to explain everything right now.” If there is danger, contact a trusted person or emergency support now.';
+  }
+  if (/\b(cousin|relative|boundary ambiguity|had|boundary)\b/.test(s)) {
+    return roman
+      ? 'Aap keh sakte/sakti hain: “Aap ki boundary matter karti hai. Pehla qadam: agar touch, message, ya baat uncomfortable ho, pause lena allowed hai.” Agar risk ho to trusted safe shakhs ko involve karein.'
+      : 'I hear that you want words that do not pressure them. You can say: “Your boundary matters. First step: if the touch, message, or conversation feels uncomfortable, you are allowed to pause.” If there is risk, involve a trusted safe person.';
+  }
+  return roman
+    ? 'Aap support mein yeh keh sakte/sakti hain: “Main aap ko force nahi karunga/karungi. Pehla qadam: pehle safety aur body ko settle karte hain; phir ek chhota next step choose karenge.” Agar danger ho to trusted safe shakhs/emergency support se rabta karein.'
+    : 'I hear that you want to respond carefully. You can say: “I will not push you. First step: let us help your body settle, then choose one small next step together.” If there is any danger, contact a trusted person or emergency support now.';
+}
+
+function shortContinuationReply(text, thread = []) {
+  const s = normalizeText(text).trim();
+  const roman = looksRomanUrdu(text);
+  const hasContext = thread.length > 0;
+  const acknowledged = /^(ok|okay|yes|yeah|yep|hmm|hm|done|ji|haan|han|theek hai|thik hai|acha|achha)$/.test(s);
+  const feetDone = /\b(feet are already|feet already|feet on the floor|already on the floor|paon pehle|paon floor|paon zameen)\b/.test(s);
+  const lowSpeech = /\b(do not feel like talking|don'?t feel like talking|cant talk|can't talk|no words|baat karne ka dil nahi|baat nahi karni|bol nahi sakta|bol nahi sakti)\b/.test(s);
+
+  if (acknowledged && hasContext) {
+    return roman
+      ? 'Theek hai. Yeh iss moment ke liye kaafi hai. Bas ek aur saans ke liye paon zameen par mehsoos karein, phir room mein ek neutral cheez ka naam lein.'
+      : 'Good. That is enough for this moment. Stay with the floor for one more breath, then name one ordinary thing you can see.';
+  }
+  if (feetDone) {
+    return roman
+      ? 'Achha, paon floor par hain. Ab agla chhota qadam: apni nazar se room mein ek colour, ek edge, aur ek ordinary object naam lein. Aap ko aur explain karna zaroori nahi.'
+      : 'I hear you. Good, your feet are already on the floor. Next tiny step: name one colour, one edge, and one ordinary object in the room. You do not have to explain more.';
+  }
+  if (lowSpeech) {
+    return roman
+      ? 'Theek hai, baat karna zaroori nahi. Aap sirf yahan reh sakte/sakti hain. Abhi pehla qadam: paon zameen par, shoulders thori soft, aur ek neutral cheez ko dekhein.'
+      : 'That is okay. You do not have to talk. First step: keep your feet on the floor, soften your shoulders a little, and look at one neutral object.';
+  }
+  return '';
+}
+
+function diagnosisReply(text) {
+  const s = normalizeText(text);
+  if (!/\b(ptsd|cptsd|c ptsd|diagnos|do i have|kya mujhe)\b/.test(s)) return '';
+  return looksRomanUrdu(text)
+    ? 'Main yahan diagnosis nahi de sakta/sakti. PTSD ya koi bhi diagnosis sirf qualified mental health professional assess kar sakta hai. Abhi ke liye: aap ka reaction real hai; dono paon zameen par rakhein aur ek trusted support/professional se baat karna consider karein.'
+    : 'I cannot diagnose you here. PTSD or any diagnosis needs a qualified mental health professional. What I can say is: your reaction is real; for now, put both feet on the floor and consider talking with a trusted support person or clinician.';
+}
+
+function cueSpecificReply(text) {
+  const s = normalizeText(text);
+  const roman = looksRomanUrdu(text);
+
+  if (/\b(news of sexual violence|sexual violence|graphic image|war disaster footage|disaster footage|victim blaming|victim-blaming|hashtag pile|graphic footage)\b/.test(s)) {
+    return roman
+      ? 'Aap ne ek heavy media trigger naam diya. Safety pehle: screen se nazar hataein, phone face down karein, dono paon zameen par rakhein, aur 5 neutral facts naam lein. Agar yeh aap ko unsafe ya self-harm thoughts ki taraf le ja raha hai to abhi trusted safe shakhs ya emergency support se rabta karein.'
+      : 'That is a heavy media trigger. Safety first: look away from the screen, put the phone face down, press both feet into the floor, and name five neutral facts. If this is pulling you toward danger or self-harm, contact a trusted person or emergency support now.';
+  }
+  if (/\b(crowded market|market|bazaar|crowd|rickshaw|careem|route change|load shedding)\b/.test(s)) {
+    return roman
+      ? 'Aap ne body alarm ko naam diya. Crowded ya unpredictable jagah nervous system ko alert kar sakti hai. Abhi pehla qadam: exit/quiet side dekhein, paon zameen par mehsoos karein, aur ek safe person ya landmark choose karein.'
+      : 'You named a real body alarm. Crowded or unpredictable places can put the nervous system on alert. First step: find the exit or a quieter side, feel your feet on the ground, and choose one safe person or landmark.';
+  }
+  if (/\b(male supervisor private message|supervisor private|private message|boss anxiety|deadlines|feedback replay)\b/.test(s)) {
+    return roman
+      ? 'Yeh work-power trigger ho sakta hai, app privacy ka issue zaroori nahi. Abhi pehla qadam: reply delay karna allowed hai; message ko task mein translate karein: “Mujhe clear next step bata dein taake main respond kar sakun.”'
+      : 'This can be a work-power trigger, not an app privacy issue. First step: you are allowed to pause before replying; translate it into a task: “Please tell me the specific next step so I can respond clearly.”';
+  }
+  if (/\b(joint family lack of privacy|joint family|privacy ki kami|susral|saas|in law|in laws)\b/.test(s)) {
+    return roman
+      ? 'Joint family mein privacy ki kami body ko constantly alert rakh sakti hai. Abhi pehla qadam: ek chhota private pocket choose karein, jaise bathroom break, walk, headphones, ya neutral excuse. Aap ki boundary valid hai.'
+      : 'Lack of privacy in a joint-family space can keep the body on alert. First step: choose one small privacy pocket, like a bathroom break, a walk, headphones, or a neutral excuse. Your boundary is valid.';
+  }
+  if (/\b(rishta|honour|honor|izzat|log kya kahenge|family pressure|marriage pressure)\b/.test(s)) {
+    return roman
+      ? 'Yeh family/sharam pressure bohat heavy ho sakta hai. Purana alarm keh sakta hai ke safety se zyada reputation important hai; lekin aap ki hifazat bhi matter karti hai. Abhi ek chhota qadam: ek safe ally ya ek neutral pause choose karein.'
+      : 'Family or honour-shame pressure can feel very heavy. The old alarm may say reputation matters more than safety, but your safety matters too. One small step: choose one safe ally or one neutral pause.';
+  }
+  if (/\b(read receipt|seen message|status story|story viewed|no reply|checking loop|bedtime scrolling|rich peer|lifestyle post|debt reminder|accidental screenshot|accidental like|whatsapp)\b/.test(s)) {
+    return roman
+      ? 'Yeh digital alarm ho sakta hai, final proof nahi. Abhi pehla qadam: phone 10 minutes ke liye face down rakhein, notifications mute karein, aur 5 neutral facts naam lein. Aap baad mein choice ke saath respond kar sakte/sakti hain.'
+      : 'This can be a digital alarm, not final proof. First step: put the phone face down for 10 minutes, mute notifications, and name five neutral facts. You can respond later with choice.';
+  }
+  if (/\b(nightmare|nightmares|pre sleep|pre-sleep|bedtime|sleep|night|waking|body memories|flashback like waking)\b/.test(s)) {
+    return roman
+      ? 'Raat ka alarm zyada loud lag sakta hai. Abhi pehla qadam: light ya familiar sound on karein, paani paas rakhein, aur aaj ki tareekh plus room ka naam lein. Agar raat unsafe lage to trusted safe shakhs ya emergency support se rabta karein.'
+      : 'Night alarm can feel louder. First step: turn on a light or familiar sound, keep water nearby, and name today’s date plus the room you are in. If the night feels unsafe, contact a trusted person or emergency support now.';
+  }
+  if (/\b(panic|racing heart|disorientation)\b/.test(s)) {
+    return roman
+      ? 'Panic mein body danger jaisa feel kar sakti hai. Abhi pehla qadam: paon zameen par, teen objects dekhein, aur ek slow breath lein. Agar chest pain severe/new ho ya saans mushkil ho to medical help lein.'
+      : 'Panic can make the body feel as if danger is here. First step: feet on the floor, look at three objects, and take one slow breath. If chest pain is severe/new or breathing is very hard, seek medical help.';
+  }
+  return '';
+}
+
 function localSupportReply(text, thread = []) {
   const s = normalizeText(text);
   const has = (patterns) => patterns.some((p) => p.test(s));
@@ -240,12 +370,30 @@ function localSupportReply(text, thread = []) {
   if (has([/\b(are you crazy|crazy|stupid|wrong|irrelevant|not relevant|doesn'?t make sense|does not make sense)\b/])) {
     return 'You are right to call that out. That reply did not meet you well. Let me reset: what is the actual question or feeling you want me to answer?';
   }
+  const shortReply = shortContinuationReply(text, thread);
+  if (shortReply) {
+    return shortReply;
+  }
+  const diagnosis = diagnosisReply(text);
+  if (diagnosis) {
+    return diagnosis;
+  }
+  const supporterReply = supporterModeReply(text);
+  if (supporterReply) {
+    return supporterReply;
+  }
   const boundaryReply = boundaryScriptReply(text, thread);
   if (boundaryReply) {
     return boundaryReply;
   }
+  const cueReply = cueSpecificReply(text);
+  if (cueReply) {
+    return cueReply;
+  }
   if (has([/\b(help|help me|need help|need support|support me|i need support|i need help|please help|what should i do|don'?t know what i need|do not know what i need)\b/])) {
-    return 'I can help you choose the next small step. Pick one: get safe, calm your body, find words to say, or just sit here with me. If you are in danger or might hurt yourself, use the red safety button or contact a trusted person now.';
+    return looksRomanUrdu(text)
+      ? 'Main aap ko next chhota qadam choose karne mein help kar sakta/sakti hoon: safety, body calm, words to say, ya bas yahan baithna. Agar danger ya self-harm ka risk hai to abhi trusted person/emergency support se rabta karein.'
+      : 'I can help you choose the next small step. Pick one: get safe, calm your body, find words to say, or just sit here with me. If you are in danger or might hurt yourself, use the red safety button or contact a trusted person now.';
   }
   if (has([/\b(sit with me|stay with me|just sit|don'?t ask questions|no questions|no advice|only listen)\b/])) {
     return 'I can sit with you. No advice, no pressure, no performance. Just this moment, one breath, and a little less aloneness.';
@@ -257,7 +405,9 @@ function localSupportReply(text, thread = []) {
     return 'A simple sentence may be enough: “I need a pause. I will answer when I can think clearly.” You do not have to defend the whole truth while your body is flooded.';
   }
   if (has([/\b(tonight|night|bed|sleep|nightmare|alone at night|scared tonight)\b/])) {
-    return 'Tonight needs a smaller plan, not a perfect one. Keep a light or familiar sound on if it helps, put water nearby, and choose one person or service you could contact if the night gets unsafe.';
+    return looksRomanUrdu(text)
+      ? 'Aaj raat perfect plan nahi, chhota plan chahiye. Light ya familiar sound on karein, paani paas rakhein, aur ek safe person/service choose karein jise zaroorat par contact kar sakte/sakti hain.'
+      : 'Tonight needs a smaller plan, not a perfect one. Keep a light or familiar sound on if it helps, put water nearby, and choose one person or service you could contact if the night gets unsafe.';
   }
 
   const trainingEntry = matchTrainingReply(text);
@@ -269,7 +419,9 @@ function localSupportReply(text, thread = []) {
     return 'Shame can make one painful moment feel like a verdict on your whole self. You are allowed to slow this down: what happened is one moment, not proof that you are wrong or too much.';
   }
   if (has([/\b(family|mother|father|parent|parents|home|honour|honor|izzat|obedience|log kya kahenge)\b/])) {
-    return 'Family pressure can feel especially heavy because it can mix love, duty, fear, and shame in one room. You do not have to solve the whole family system right now; one small boundary or one safe pause is enough for this moment.';
+    return looksRomanUrdu(text)
+      ? 'Family pressure bohat heavy lag sakta hai kyun ke is mein love, duty, darr aur sharam mix ho jate hain. Abhi poora system solve nahi karna; ek chhoti boundary ya safe pause kaafi hai.'
+      : 'Family pressure can feel especially heavy because it can mix love, duty, fear, and shame in one room. You do not have to solve the whole family system right now; one small boundary or one safe pause is enough for this moment.';
   }
   if (has([/\b(replay|replaying|again and again|loop|ruminat|cannot stop thinking|can't stop thinking)\b/])) {
     return 'Replay is often the mind trying to make the moment end differently after it has already happened. For one minute, can you name the room you are in and one thing that is not part of that memory?';
@@ -284,7 +436,9 @@ function localSupportReply(text, thread = []) {
     return 'Numbness is not failure. Sometimes the system lowers the volume because feeling everything at once would be too much. A small body cue, like feet on the floor, may be enough for now.';
   }
   if (has([/\b(partner|reply|text|late|left me|abandon|relationship)\b/])) {
-    return 'A delayed reply can touch an old abandonment alarm very quickly. Before you decide what it means, try holding both truths: the fear is real, and the evidence may still be incomplete.';
+    return looksRomanUrdu(text)
+      ? 'Delayed reply purana abandonment alarm jaga sakta hai. Meaning decide karne se pehle dono truths hold karein: darr real hai, aur evidence abhi incomplete ho sakta hai. Phone ko thori der face down rakhna pehla qadam ho sakta hai.'
+      : 'A delayed reply can touch an old abandonment alarm very quickly. Before you decide what it means, try holding both truths: the fear is real, and the evidence may still be incomplete. First step: put the phone face down for a few minutes.';
   }
   if (has([/\b(body|chest|stomach|jaw|shoulders|pain|tight|shaking)\b/])) {
     return 'Your body may be carrying the alarm before your words can catch up. Put one hand somewhere neutral, look around the room, and let the body know this is the present moment.';
@@ -293,9 +447,13 @@ function localSupportReply(text, thread = []) {
     return 'Not knowing where to start is a valid starting place. We can make it very small: are you physically safe enough right now, or do you need support before words?';
   }
   if (prior && short) {
-    return 'I may have answered too broadly. Give me one more sentence, and I will respond to that directly.';
+    return looksRomanUrdu(text)
+      ? 'Theek hai. Hum isay aur chhota rakhte hain: ek saans, paon zameen par, aur room mein ek neutral cheez.'
+      : 'Okay. We can keep this smaller: one breath, feet on the floor, and one neutral thing in the room.';
   }
-  return 'I am here with you. You do not have to make this neat before it is allowed to matter. What part of this feels loudest right now?';
+  return looksRomanUrdu(text)
+    ? 'Main yahan hoon. Aap ko isay perfect words mein explain karna zaroori nahi. Abhi pehla qadam: paon zameen par, ek neutral cheez ka naam, aur ek slow breath.'
+    : 'I am here with you. You do not have to make this neat before it is allowed to matter. First step: feet on the floor, name one neutral thing, and take one slow breath.';
 }
 
 function Companion({ thread, onAddMsg, onClear, t }) {
@@ -316,12 +474,32 @@ function Companion({ thread, onAddMsg, onClear, t }) {
     const localSafetyKind = detectLocalSafety(text);
     onAddMsg({ role: 'me', text, at: Date.now() });
     if (localSafetyKind) {
-      onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind), at: Date.now(), safetyKind: localSafetyKind });
+      onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind, text), at: Date.now(), safetyKind: localSafetyKind });
+      return;
+    }
+    const shortReply = shortContinuationReply(text, thread);
+    if (shortReply) {
+      onAddMsg({ role: 'them', text: shortReply, at: Date.now(), localKind: 'shortContinuation' });
+      return;
+    }
+    const diagnosis = diagnosisReply(text);
+    if (diagnosis) {
+      onAddMsg({ role: 'them', text: diagnosis, at: Date.now(), localKind: 'diagnosisBoundary' });
+      return;
+    }
+    const supporterReply = supporterModeReply(text);
+    if (supporterReply) {
+      onAddMsg({ role: 'them', text: supporterReply, at: Date.now(), localKind: 'supporter' });
       return;
     }
     const boundaryReply = boundaryScriptReply(text, thread);
     if (boundaryReply) {
       onAddMsg({ role: 'them', text: boundaryReply, at: Date.now(), localKind: 'boundary' });
+      return;
+    }
+    const cueReply = cueSpecificReply(text);
+    if (cueReply) {
+      onAddMsg({ role: 'them', text: cueReply, at: Date.now(), localKind: 'cueSpecific' });
       return;
     }
     const trainingEntry = matchTrainingReply(text);
