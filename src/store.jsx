@@ -36,7 +36,9 @@ const DEFAULT_STATE = {
 
 function isLegacyCompanionError(msg) {
   const text = String(msg?.text || '').toLowerCase();
-  return text.includes('something interrupted the reply') || text.includes('interrupted the reply');
+  return text.includes('something interrupted the reply')
+    || text.includes('interrupted the reply')
+    || (text.includes('the related card') && text.includes('may be one doorway'));
 }
 
 function cleanLoadedState(state) {

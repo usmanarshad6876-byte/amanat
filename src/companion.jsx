@@ -104,12 +104,29 @@ function localCompanionReply(kind) {
   return replies[kind] || '';
 }
 
-function localSupportReply(text, relatedCards = []) {
+function localSupportReply(text, thread = []) {
   const s = normalizeText(text);
   const has = (patterns) => patterns.some((p) => p.test(s));
-  const leadCard = relatedCards[0]?.title;
+  const prior = [...thread].reverse().find(m => m.role === 'them')?.text || '';
+  const short = s.trim().split(/\s+/).filter(Boolean).length <= 4;
 
-  if (has([/\b(ashamed|shame|guilty|guilt|burden|too much|my fault|responsible)\b/])) {
+  if (has([/\b(hi|hello|hey|salam|assalam|aoa)\b/]) && short) {
+    return 'Hello. I am here. You can start with one sentence, or we can sit quietly for a moment.';
+  }
+  if (has([/\b(what|what do you mean|huh|confused)\b/]) && short) {
+    return 'You are right to ask. I meant: you do not have to explain everything perfectly here. Tell me one simple thing about what happened, and I will stay with that.';
+  }
+  if (has([/\b(why|but why)\b/]) && short) {
+    return 'Because I may not have enough context yet. I should not guess too much from one short message. What do you want me to understand first?';
+  }
+  if (has([/\b(context|do you have context|remember|understand me)\b/])) {
+    return 'I can use what you have typed in this chat, but I may miss things or misunderstand. If my reply does not fit, say “not that” and give me one line of context.';
+  }
+  if (has([/\b(are you crazy|crazy|stupid|wrong|irrelevant|not relevant|doesn'?t make sense|does not make sense)\b/])) {
+    return 'You are right to call that out. That reply did not meet you well. Let me reset: what is the actual question or feeling you want me to answer?';
+  }
+
+  if (has([/\b(ashamed|a shamed|shame|shamed|guilty|guilt|burden|too much|my fault|responsible)\b/])) {
     return 'Shame can make one painful moment feel like a verdict on your whole self. You are allowed to slow this down: what happened is one moment, not proof that you are wrong or too much.';
   }
   if (has([/\b(family|mother|father|parent|parents|home|honour|honor|izzat|obedience|log kya kahenge)\b/])) {
@@ -136,46 +153,10 @@ function localSupportReply(text, relatedCards = []) {
   if (has([/\b(don'?t know|do not know|where to start|start anywhere|confused|lost)\b/])) {
     return 'Not knowing where to start is a valid starting place. We can make it very small: are you physically safe enough right now, or do you need support before words?';
   }
-  if (leadCard) {
-    return `I hear that this moment has weight. The related card "${leadCard}" may be one doorway, but you do not have to analyse it now. What feels most present: the body feeling, the old story, or the need for words?`;
+  if (prior && short) {
+    return 'I may have answered too broadly. Give me one more sentence, and I will respond to that directly.';
   }
   return 'I am here with you. You do not have to make this neat before it is allowed to matter. What part of this feels loudest right now?';
-}
-
-function findRelatedAmanatCards(text, limit = 3) {
-  const q = normalizeText(text);
-  const words = Array.from(new Set(q.split(/\s+/).filter(w => w.length > 3))).slice(0, 18);
-  if (!words.length) return [];
-  const candidates = [];
-  const add = (kind, id, title, subtitle, body, hint) => {
-    const hay = normalizeText([title, subtitle, body, hint].filter(Boolean).join(' '));
-    const score = words.reduce((sum, word) => sum + (hay.includes(word) ? 1 : 0), 0);
-    if (score > 0) candidates.push({ kind, id, title, subtitle, hint, score });
-  };
-
-  (window.AMANAT_SURVIVOR_CARDS?.cards || []).slice(0, 800).forEach(card => {
-    add('Survivor card', card.standardId || card.id || card.sourceCardId, card.trigger || card.cardTitle || card.title, card.domain || card.module, card.cardText || card.bodySignals || card.shameSentence, 'Tools > Cards');
-  });
-  const triggerLibrary = window.AMANAT_TRIGGER_LIBRARY || { triggers: [], pakistanTriggers: [] };
-  [...(triggerLibrary.pakistanTriggers || []), ...(triggerLibrary.triggers || [])].slice(0, 700).forEach(card => {
-    add('Trigger', card.id, card.cue, [card.domain, card.subdomain].filter(Boolean).join(' · '), [card.story, card.bodySignals, card.grounding, card.selfScript].filter(Boolean).join(' '), 'Tools > Triggers');
-  });
-  Object.entries(window.AMANAT_RECOVERY_MODULES || {}).forEach(([moduleKey, module]) => {
-    (module.items || []).slice(0, 120).forEach(item => {
-      add('Module row', item.id, item.trigger || item.context || item.category, item.module || module.meta?.title || moduleKey, [item.shameSentence, item.bodySignal, item.script, item.grounding, item.repair].filter(Boolean).join(' '), 'Tools > module library');
-    });
-  });
-
-  const seen = new Set();
-  return candidates
-    .sort((a, b) => b.score - a.score)
-    .filter(item => {
-      const key = `${item.kind}:${item.id}:${item.title}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, limit);
 }
 
 function Companion({ thread, onAddMsg, onClear, t }) {
@@ -193,7 +174,6 @@ function Companion({ thread, onAddMsg, onClear, t }) {
     if (!text || thinking) return;
     setDraft('');
     setErr('');
-    const relatedCards = findRelatedAmanatCards(text);
     const localSafetyKind = detectLocalSafety(text);
     onAddMsg({ role: 'me', text, at: Date.now() });
     if (localSafetyKind) {
@@ -203,7 +183,7 @@ function Companion({ thread, onAddMsg, onClear, t }) {
     setThinking(true);
     try {
       if (!window.claude?.complete) {
-        onAddMsg({ role: 'them', text: localSupportReply(text, relatedCards), at: Date.now() });
+        onAddMsg({ role: 'them', text: localSupportReply(text, thread), at: Date.now() });
         return;
       }
       const messages = [
@@ -217,7 +197,7 @@ function Companion({ thread, onAddMsg, onClear, t }) {
       const reply = (res || '').trim();
       onAddMsg({ role: 'them', text: reply || 'I\u2019m here. Take your time.', at: Date.now() });
     } catch (e) {
-      onAddMsg({ role: 'them', text: localSupportReply(text, relatedCards), at: Date.now() });
+      onAddMsg({ role: 'them', text: localSupportReply(text, thread), at: Date.now() });
     } finally {
       setThinking(false);
     }
@@ -272,19 +252,6 @@ function Companion({ thread, onAddMsg, onClear, t }) {
           {thread.map((m, i) => (
             <div key={i} className={"chat-msg " + (m.role === 'me' ? 'me' : 'them')}>
               <div>{m.text}</div>
-              {m.relatedCards?.length > 0 && (
-                <div className="related-card-list">
-                  <p className="eyebrow">Related cards</p>
-                  {m.relatedCards.map(card => (
-                    <div key={`${card.kind}-${card.id}-${card.title}`} className="related-card-chip">
-                      <span className="chip">{card.kind}{card.id ? ` · ${card.id}` : ''}</span>
-                      <strong>{card.title}</strong>
-                      {card.subtitle && <small>{card.subtitle}</small>}
-                      <small>{card.hint}</small>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           ))}
           {thinking && (
