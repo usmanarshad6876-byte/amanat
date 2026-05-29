@@ -6,6 +6,7 @@ window.React = React;
 await import('./i18n.js');
 await import('./content.js');
 await import('./safety.js');
+await import('./claude-client.js');
 await import('./trigger-library.js');
 await import('./survivor-cards.js');
 await import('./shame-spiral-cards.js');
