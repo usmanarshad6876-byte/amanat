@@ -474,6 +474,7 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
+  const [showRoughDayLibrary, setShowRoughDayLibrary] = useStateS(false);
   const firstVisit = useRefS(TOOLS_FIRST_VISIT_SESSION.current);
   const [firstVisitVersion, setFirstVisitVersion] = useStateS(0);
   const showBrowseLists = userRole !== 'survivor';
@@ -662,8 +663,15 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
       {!showSurvivorFirstVisit && tab === 'boundaries' && <BoundaryScriptsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
       {!showSurvivorFirstVisit && tab === 'anger' && <ModuleLibraryPanel moduleKey="angerGrief" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'roughday' && <RoughDayGuidedPanel onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'roughday' && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
+      {!showSurvivorFirstVisit && tab === 'roughday' && (
+        <RoughDayGuidedPanel
+          onOpenTool={onOpenTool}
+          onUnsafe={() => setTab('unsafe')}
+          showRoughDayLibrary={showRoughDayLibrary}
+          setShowRoughDayLibrary={setShowRoughDayLibrary}
+        />
+      )}
+      {!showSurvivorFirstVisit && tab === 'roughday' && showRoughDayLibrary && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
       {!showSurvivorFirstVisit && tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
@@ -765,7 +773,7 @@ const ROUGH_DAY_STEPS = [
   },
 ];
 
-function RoughDayGuidedPanel({ onOpenTool, onUnsafe }) {
+function RoughDayGuidedPanel({ onOpenTool, onUnsafe, showRoughDayLibrary, setShowRoughDayLibrary }) {
   const [step, setStep] = useStateS(0);
   const current = ROUGH_DAY_STEPS[step];
   const next = () => setStep(i => Math.min(ROUGH_DAY_STEPS.length - 1, i + 1));
@@ -800,6 +808,11 @@ function RoughDayGuidedPanel({ onOpenTool, onUnsafe }) {
           <button className={current.unsafe ? 'btn btn-crisis' : 'btn btn-forest'} onClick={act}>
             {current.action} {!current.restart && <window.Icon name="chevronRight" size={16} />}
           </button>
+          {current.restart && !showRoughDayLibrary && (
+            <button className="btn btn-soft" onClick={() => setShowRoughDayLibrary(true)}>
+              See the full rough-day library
+            </button>
+          )}
         </div>
       </div>
     </div>
