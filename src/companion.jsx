@@ -125,6 +125,21 @@ function localSupportReply(text, thread = []) {
   if (has([/\b(are you crazy|crazy|stupid|wrong|irrelevant|not relevant|doesn'?t make sense|does not make sense)\b/])) {
     return 'You are right to call that out. That reply did not meet you well. Let me reset: what is the actual question or feeling you want me to answer?';
   }
+  if (has([/\b(help|help me|need help|need support|support me|i need support|i need help|please help|what should i do|don'?t know what i need|do not know what i need)\b/])) {
+    return 'I can help you choose the next small step. Pick one: get safe, calm your body, find words to say, or just sit here with me. If you are in danger or might hurt yourself, use the red safety button or contact a trusted person now.';
+  }
+  if (has([/\b(sit with me|stay with me|just sit|don'?t ask questions|no questions|no advice|only listen)\b/])) {
+    return 'I can sit with you. No advice, no pressure, no performance. Just this moment, one breath, and a little less aloneness.';
+  }
+  if (has([/\b(calm down|calm my body|ground me|grounding|triggered|activated|overwhelmed|too much right now)\b/])) {
+    return 'Let us make this very small. Look at one edge in the room, press your feet into the floor, and name today out loud or in your mind. You do not have to explain the whole story first.';
+  }
+  if (has([/\b(words to say|what to say|say to them|reply to them|message them|need words)\b/])) {
+    return 'A simple sentence may be enough: “I need a pause. I will answer when I can think clearly.” You do not have to defend the whole truth while your body is flooded.';
+  }
+  if (has([/\b(tonight|night|bed|sleep|nightmare|alone at night|scared tonight)\b/])) {
+    return 'Tonight needs a smaller plan, not a perfect one. Keep a light or familiar sound on if it helps, put water nearby, and choose one person or service you could contact if the night gets unsafe.';
+  }
 
   if (has([/\b(ashamed|a shamed|shame|shamed|guilty|guilt|burden|too much|my fault|responsible)\b/])) {
     return 'Shame can make one painful moment feel like a verdict on your whole self. You are allowed to slow this down: what happened is one moment, not proof that you are wrong or too much.';
@@ -209,9 +224,9 @@ function Companion({ thread, onAddMsg, onClear, t }) {
 
   const seeds = [
     'I don\u2019t know where to start.',
+    'I need support.',
     'Something just happened.',
     'I keep replaying it.',
-    'I am very tired.',
   ];
   const draftSafety = draft.trim() ? detectLocalSafety(draft) : null;
 
