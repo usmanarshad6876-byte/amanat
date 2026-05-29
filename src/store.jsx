@@ -34,10 +34,23 @@ const DEFAULT_STATE = {
   hasOnboarded: false,
 };
 
+function isLegacyCompanionError(msg) {
+  const text = String(msg?.text || '').toLowerCase();
+  return text.includes('something interrupted the reply') || text.includes('interrupted the reply');
+}
+
+function cleanLoadedState(state) {
+  if (!state) return state;
+  const chatThread = Array.isArray(state.chatThread)
+    ? state.chatThread.filter(msg => !isLegacyCompanionError(msg))
+    : [];
+  return { ...state, chatThread };
+}
+
 window.useAppStore = function useAppStore(persistLocal) {
   const [state, setStateRaw] = useState(() => {
     // Read from local if user has previously enabled it
-    const initial = loadFromStorage(true) || loadFromStorage(false) || DEFAULT_STATE;
+    const initial = cleanLoadedState(loadFromStorage(true) || loadFromStorage(false)) || DEFAULT_STATE;
     return { ...DEFAULT_STATE, ...initial };
   });
 
