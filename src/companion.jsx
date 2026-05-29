@@ -272,9 +272,17 @@ function shortContinuationReply(text, thread = []) {
   const s = normalizeText(text).trim();
   const roman = looksRomanUrdu(text);
   const hasContext = thread.length > 0;
+  const priorThem = [...thread].reverse().find(m => m.role === 'them')?.text || '';
+  const priorNorm = normalizeText(priorThem);
   const acknowledged = /^(ok|okay|yes|yeah|yep|hmm|hm|done|ji|haan|han|theek hai|thik hai|acha|achha)$/.test(s);
   const feetDone = /\b(feet are already|feet already|feet on the floor|already on the floor|paon pehle|paon floor|paon zameen)\b/.test(s);
   const lowSpeech = /\b(do not feel like talking|don'?t feel like talking|cant talk|can't talk|no words|baat karne ka dil nahi|baat nahi karni|bol nahi sakta|bol nahi sakti)\b/.test(s);
+  const wordCount = s.split(/\s+/).filter(Boolean).length;
+  const gaveNeutralObject = /^(one neutral thing (can be|is) )?[a-z0-9' -]{2,40}$/.test(s)
+    && !/[?]/.test(text)
+    && !/\b(help|unsafe|hurt|danger|die|kill|suicide|self harm|cut|blood|privacy|data)\b/.test(s);
+  const wasAskedNeutralObject = /\b(neutral thing|neutral object|ordinary object|ordinary thing|one thing in the room|ek neutral|ordinary cheez)\b/.test(priorNorm);
+  const wasTrackingNeutralObject = /\b(let your eyes rest|notice its colour|shape or edge|aankhon se notice|colour, shape)\b/.test(priorNorm);
 
   if (acknowledged && hasContext) {
     return roman
@@ -290,6 +298,16 @@ function shortContinuationReply(text, thread = []) {
     return roman
       ? 'Theek hai, baat karna zaroori nahi. Aap sirf yahan reh sakte/sakti hain. Abhi pehla qadam: paon zameen par, shoulders thori soft, aur ek neutral cheez ko dekhein.'
       : 'That is okay. You do not have to talk. First step: keep your feet on the floor, soften your shoulders a little, and look at one neutral object.';
+  }
+  if (wasAskedNeutralObject && gaveNeutralObject && wordCount <= 8) {
+    return roman
+      ? 'Good. Bas us cheez ko aankhon se notice karein. Us ka colour, shape, ya edge dekhein. Abhi story explain karna zaroori nahi; sirf body ko batayein ke aap is room mein hain.'
+      : 'Good. Let your eyes rest on that for a moment. Notice its colour, shape, or edge. You do not have to explain the story yet; just let your body know you are in this room.';
+  }
+  if (wasTrackingNeutralObject && gaveNeutralObject && wordCount <= 4) {
+    return roman
+      ? 'Haan, yeh bhi theek hai. Ab sirf ek cheez choose karein aur ek slow breath ke liye us ke saath stay karein. Itna kaafi hai.'
+      : 'Yes, that can work too. Choose just one object now and stay with it for one slow breath. That is enough.';
   }
   return '';
 }

@@ -661,7 +661,16 @@ p { margin: 0; max-width: 64ch; }
 }
 .quick-exit-btn:hover { color: var(--ink); border-color: var(--ink-soft); }
 @media (max-width: 600px) {
-  .quick-exit-btn { right: 86px; bottom: 22px; }
+  .panic-btn {
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 142px);
+    width: 48px;
+    height: 48px;
+  }
+  .quick-exit-btn {
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 88px);
+  }
   .page { padding: 28px 16px 118px; }
   .page-title { font-size: 34px; }
   .page-lede { font-size: 16px; margin-bottom: 26px; }
