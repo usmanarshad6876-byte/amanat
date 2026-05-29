@@ -341,6 +341,8 @@ const TOOL_FEELING_ENTRY_CONFIG = [
   },
 ];
 
+const TOOLS_FIRST_VISIT_SESSION = { current: true };
+
 function FeelingEntryPanel({ onSelectTab, onOpenTool }) {
   const openFeeling = (item) => {
     if (item.target.type === 'tool') {
@@ -369,6 +371,45 @@ function FeelingEntryPanel({ onSelectTab, onOpenTool }) {
           </button>
         ))}
       </div>
+    </section>
+  );
+}
+
+function SurvivorToolsFirstVisit({ onSelectTab, onSeeAllTools }) {
+  const choices = [
+    { label: 'I need to calm my body', tab: 'guide', icon: 'grounding' },
+    { label: 'Something bad is happening', tab: 'unsafe', icon: 'crisis' },
+    { label: 'I feel stuck in my head', tab: 'reframe', icon: 'reframe' },
+    { label: 'I need words to say', tab: 'boundaries', icon: 'shield' },
+    { label: "I don't know", tab: 'guide', icon: 'checkin' },
+  ];
+
+  return (
+    <section className="survivor-tools-entry reveal" aria-labelledby="survivor-tools-entry-title">
+      <div>
+        <p className="section-eyebrow">Start here</p>
+        <h2 id="survivor-tools-entry-title" className="section-title">What do you need right now?</h2>
+      </div>
+      <div className="survivor-tools-entry-grid">
+        {choices.map(choice => (
+          <button key={choice.label} className="survivor-tools-entry-card" onClick={() => onSelectTab(choice.tab)}>
+            <span className="feeling-entry-icon"><window.Icon name={choice.icon} size={22} /></span>
+            <span className="feeling-entry-copy">
+              <strong>{choice.label}</strong>
+            </span>
+          </button>
+        ))}
+      </div>
+      <a
+        href="#tools"
+        className="survivor-tools-see-all"
+        onClick={(e) => {
+          e.preventDefault();
+          onSeeAllTools();
+        }}
+      >
+        See all tools
+      </a>
     </section>
   );
 }
@@ -433,11 +474,19 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
+  const firstVisit = useRefS(TOOLS_FIRST_VISIT_SESSION.current);
+  const [firstVisitVersion, setFirstVisitVersion] = useStateS(0);
   const showBrowseLists = userRole !== 'survivor';
   useEffectS(() => { if (sub) setTab(sub); }, [sub]);
   useEffectS(() => {
     if (!showResearch && tab === 'research') setTab('overview');
   }, [showResearch, tab]);
+  const dismissFirstVisit = (nextTab = 'overview') => {
+    firstVisit.current = false;
+    TOOLS_FIRST_VISIT_SESSION.current = false;
+    setTab(nextTab);
+    setFirstVisitVersion(v => v + 1);
+  };
 
   const toolGroups = [
     {
@@ -504,6 +553,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
     }] : []),
   ];
   const activeGroup = toolGroups.find(group => group.tabs.some(x => x.id === tab)) || toolGroups[0];
+  const showSurvivorFirstVisit = userRole === 'survivor' && firstVisit.current && !sub;
 
   return (
     <div className="page">
@@ -512,6 +562,14 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
         <h1 className="page-title">Help me through this moment</h1>
         <p className="page-lede">{tapOnlyMode ? 'Tap one button. No typing needed.' : lowTextMode ? 'Pick one door. You can stop anytime.' : userRole === 'survivor' ? 'Start with safety, then one body step, one script, or one context. The larger libraries stay tucked away unless you open them.' : 'Start with safety, then choose the body, words, pattern, or life context that fits. Use any. Skip any.'}</p>
       </div>
+      {showSurvivorFirstVisit ? (
+        <SurvivorToolsFirstVisit
+          key={firstVisitVersion}
+          onSelectTab={dismissFirstVisit}
+          onSeeAllTools={() => dismissFirstVisit('overview')}
+        />
+      ) : (
+        <>
       <div className="tool-entry-mode reveal" aria-label="Tool entry modes">
         <button className={"tool-entry-pill" + (tab === 'feelings' ? ' tool-entry-pill-active' : '')} onClick={() => setTab('feelings')}>
           <window.Icon name="mood" size={18} />
@@ -533,9 +591,11 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
           ))}
         </div>
       </div>
+        </>
+      )}
 
-      {tab === 'feelings' && <FeelingEntryPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
-      {tab === 'overview' && (
+      {!showSurvivorFirstVisit && tab === 'feelings' && <FeelingEntryPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
+      {!showSurvivorFirstVisit && tab === 'overview' && (
         <div className="stack reveal">
           <ToolSection title="I need help now" intro="For moments when you need one step, not a whole library.">
             <ToolTile label="I don't know what I need" desc="Answer one safety question, then get one next step." icon="checkin" onClick={() => setTab('guide')} />
@@ -587,35 +647,35 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
         </div>
       )}
 
-      {tab === 'guide' && <WhatNowPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
-      {tab === 'unsafe' && <NotSafePanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
-      {tab === 'coercion' && <CoercionPanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
-      {tab === 'dv' && <DomesticViolencePlanPanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
-      {tab === 'csa' && <CsaDisclosurePanel onOpenTool={onOpenTool} />}
-      {tab === 'medical' && <MedicalRedFlagsPanel onOpenTool={onOpenTool} />}
-      {tab === 'privacy' && <SharedDevicePanel lowTextMode={lowTextMode} />}
-      {tab === 'modes' && <ModesPanel onOpenTool={onOpenTool} />}
-      {tab === 'mood' && <MoodPanel store={store} onLogMood={onLogMood} />}
-      {tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} />}
-      {tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'boundaries' && <BoundaryScriptsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'anger' && <ModuleLibraryPanel moduleKey="angerGrief" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'roughday' && <RoughDayGuidedPanel onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'roughday' && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
-      {tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'relationships' && <ModuleLibraryPanel moduleKey="relationships" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'intimacy' && <ModuleLibraryPanel moduleKey="intimacy" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {tab === 'workplace' && <ModuleLibraryPanel moduleKey="workplace" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {showResearch && tab === 'research' && <ResearchWorkspacePanel lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'triggers' && <TriggerLibraryPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {tab === 'language' && <LanguagePanel data={window.AMANAT_CONTENT.languageGuide} eyebrowText="Old alarm says" eyebrowSafe="Steadiness says" intro="These shifts are not corrections to force on anyone. They are gentler alternatives, when the nervous system is ready for one." />}
-      {tab === 'loops' && <LanguagePanel data={window.AMANAT_CONTENT.mindLoops} eyebrowText="Loop says" eyebrowSafe="Grounding says" intro="These patterns are about what the mind has learned to believe about thinking, remembering, scanning, feeling, and healing." />}
-      {tab === 'affirm' && <AffirmPanel store={store} />}
+      {!showSurvivorFirstVisit && tab === 'guide' && <WhatNowPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
+      {!showSurvivorFirstVisit && tab === 'unsafe' && <NotSafePanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
+      {!showSurvivorFirstVisit && tab === 'coercion' && <CoercionPanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
+      {!showSurvivorFirstVisit && tab === 'dv' && <DomesticViolencePlanPanel onOpenTool={onOpenTool} safetyLanguage={safetyLanguage} lowTextMode={lowTextMode} />}
+      {!showSurvivorFirstVisit && tab === 'csa' && <CsaDisclosurePanel onOpenTool={onOpenTool} />}
+      {!showSurvivorFirstVisit && tab === 'medical' && <MedicalRedFlagsPanel onOpenTool={onOpenTool} />}
+      {!showSurvivorFirstVisit && tab === 'privacy' && <SharedDevicePanel lowTextMode={lowTextMode} />}
+      {!showSurvivorFirstVisit && tab === 'modes' && <ModesPanel onOpenTool={onOpenTool} />}
+      {!showSurvivorFirstVisit && tab === 'mood' && <MoodPanel store={store} onLogMood={onLogMood} />}
+      {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} />}
+      {!showSurvivorFirstVisit && tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'boundaries' && <BoundaryScriptsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'anger' && <ModuleLibraryPanel moduleKey="angerGrief" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'roughday' && <RoughDayGuidedPanel onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'roughday' && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
+      {!showSurvivorFirstVisit && tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'relationships' && <ModuleLibraryPanel moduleKey="relationships" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'intimacy' && <ModuleLibraryPanel moduleKey="intimacy" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'workplace' && <ModuleLibraryPanel moduleKey="workplace" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && showResearch && tab === 'research' && <ResearchWorkspacePanel lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'triggers' && <TriggerLibraryPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'language' && <LanguagePanel data={window.AMANAT_CONTENT.languageGuide} eyebrowText="Old alarm says" eyebrowSafe="Steadiness says" intro="These shifts are not corrections to force on anyone. They are gentler alternatives, when the nervous system is ready for one." />}
+      {!showSurvivorFirstVisit && tab === 'loops' && <LanguagePanel data={window.AMANAT_CONTENT.mindLoops} eyebrowText="Loop says" eyebrowSafe="Grounding says" intro="These patterns are about what the mind has learned to believe about thinking, remembering, scanning, feeling, and healing." />}
+      {!showSurvivorFirstVisit && tab === 'affirm' && <AffirmPanel store={store} />}
     </div>
   );
 }
