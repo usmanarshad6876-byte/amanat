@@ -104,6 +104,44 @@ function localCompanionReply(kind) {
   return replies[kind] || '';
 }
 
+function localSupportReply(text, relatedCards = []) {
+  const s = normalizeText(text);
+  const has = (patterns) => patterns.some((p) => p.test(s));
+  const leadCard = relatedCards[0]?.title;
+
+  if (has([/\b(ashamed|shame|guilty|guilt|burden|too much|my fault|responsible)\b/])) {
+    return 'Shame can make one painful moment feel like a verdict on your whole self. You are allowed to slow this down: what happened is one moment, not proof that you are wrong or too much.';
+  }
+  if (has([/\b(family|mother|father|parent|parents|home|honour|honor|izzat|obedience|log kya kahenge)\b/])) {
+    return 'Family pressure can feel especially heavy because it can mix love, duty, fear, and shame in one room. You do not have to solve the whole family system right now; one small boundary or one safe pause is enough for this moment.';
+  }
+  if (has([/\b(replay|replaying|again and again|loop|ruminat|cannot stop thinking|can't stop thinking)\b/])) {
+    return 'Replay is often the mind trying to make the moment end differently after it has already happened. For one minute, can you name the room you are in and one thing that is not part of that memory?';
+  }
+  if (has([/\b(tired|exhausted|drained|done healing|tired of healing|no energy)\b/])) {
+    return 'That tiredness makes sense. Healing can become another demand if nobody lets you simply be human for a while. You do not have to make progress in this exact minute.';
+  }
+  if (has([/\b(angry|anger|hate|rage|furious|revenge)\b/])) {
+    return 'Anger can be the part of you that still knows something was not okay. You do not have to act from it right now; you can let it tell the truth without letting it create more danger.';
+  }
+  if (has([/\b(numb|nothing|empty|blank|shut down|not feel)\b/])) {
+    return 'Numbness is not failure. Sometimes the system lowers the volume because feeling everything at once would be too much. A small body cue, like feet on the floor, may be enough for now.';
+  }
+  if (has([/\b(partner|reply|text|late|left me|abandon|relationship)\b/])) {
+    return 'A delayed reply can touch an old abandonment alarm very quickly. Before you decide what it means, try holding both truths: the fear is real, and the evidence may still be incomplete.';
+  }
+  if (has([/\b(body|chest|stomach|jaw|shoulders|pain|tight|shaking)\b/])) {
+    return 'Your body may be carrying the alarm before your words can catch up. Put one hand somewhere neutral, look around the room, and let the body know this is the present moment.';
+  }
+  if (has([/\b(don'?t know|do not know|where to start|start anywhere|confused|lost)\b/])) {
+    return 'Not knowing where to start is a valid starting place. We can make it very small: are you physically safe enough right now, or do you need support before words?';
+  }
+  if (leadCard) {
+    return `I hear that this moment has weight. The related card "${leadCard}" may be one doorway, but you do not have to analyse it now. What feels most present: the body feeling, the old story, or the need for words?`;
+  }
+  return 'I am here with you. You do not have to make this neat before it is allowed to matter. What part of this feels loudest right now?';
+}
+
 function findRelatedAmanatCards(text, limit = 3) {
   const q = normalizeText(text);
   const words = Array.from(new Set(q.split(/\s+/).filter(w => w.length > 3))).slice(0, 18);
@@ -156,14 +194,18 @@ function Companion({ thread, onAddMsg, onClear, t }) {
     setDraft('');
     setErr('');
     const relatedCards = findRelatedAmanatCards(text);
-    onAddMsg({ role: 'me', text, at: Date.now(), relatedCards });
     const localSafetyKind = detectLocalSafety(text);
+    onAddMsg({ role: 'me', text, at: Date.now() });
     if (localSafetyKind) {
-      onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind), at: Date.now(), safetyKind: localSafetyKind, relatedCards: relatedCards.slice(0, 2) });
+      onAddMsg({ role: 'them', text: localCompanionReply(localSafetyKind), at: Date.now(), safetyKind: localSafetyKind });
       return;
     }
     setThinking(true);
     try {
+      if (!window.claude?.complete) {
+        onAddMsg({ role: 'them', text: localSupportReply(text, relatedCards), at: Date.now() });
+        return;
+      }
       const messages = [
         ...thread.map(m => ({ role: m.role === 'me' ? 'user' : 'assistant', content: m.text })),
         { role: 'user', content: text },
@@ -173,10 +215,9 @@ function Companion({ thread, onAddMsg, onClear, t }) {
         messages,
       });
       const reply = (res || '').trim();
-      onAddMsg({ role: 'them', text: reply || 'I\u2019m here. Take your time.', at: Date.now(), relatedCards });
+      onAddMsg({ role: 'them', text: reply || 'I\u2019m here. Take your time.', at: Date.now() });
     } catch (e) {
-      setErr('Something interrupted the reply. Try again in a moment, or use the in-app grounding tools.');
-      onAddMsg({ role: 'them', text: 'I\u2019m here, but something interrupted the reply. Try again in a moment, or use the grounding tools while you wait.', at: Date.now() });
+      onAddMsg({ role: 'them', text: localSupportReply(text, relatedCards), at: Date.now() });
     } finally {
       setThinking(false);
     }
