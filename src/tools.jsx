@@ -285,6 +285,8 @@ The trauma-says sentence:
 
 Write the safety-says sentence(s):`;
 
+const REFRAME_CAUTION_DISMISSED = { current: false };
+
 function needsSafetyRedirect(input) {
   const kind = window.AMANAT_SAFETY?.detect(input);
   return window.AMANAT_SAFETY?.isUrgent(kind);
@@ -326,11 +328,12 @@ async function completeReframe(input) {
   }
 }
 
-function Reframe({ onSave, lastReframes = [] }) {
+function Reframe({ onSave, lastReframes = [], onOpenCompanion }) {
   const [input, setInput] = useStateT('');
   const [output, setOutput] = useStateT('');
   const [loading, setLoading] = useStateT(false);
   const [err, setErr] = useStateT('');
+  const [showActivationNote, setShowActivationNote] = useStateT(() => !REFRAME_CAUTION_DISMISSED.current);
 
   const run = async () => {
     if (!input.trim() || loading) return;
@@ -356,6 +359,16 @@ function Reframe({ onSave, lastReframes = [] }) {
     <div className="stack">
       <div className="card-tactile">
         <div className="eyebrow" style={{ color: 'var(--rose)' }}>What the old alarm says</div>
+        {showActivationNote && (
+          <div className="card-sunk" style={{ background: 'var(--amber-wash)', marginTop: 10, display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>
+              Writing the thought can feel activating. If it does, close this and open Companion or box breathing instead.
+            </p>
+            <button className="icon-btn" onClick={() => { REFRAME_CAUTION_DISMISSED.current = true; setShowActivationNote(false); }} aria-label="Hide writing caution" title="Hide">
+              <window.Icon name="close" size={14} />
+            </button>
+          </div>
+        )}
         <textarea
           className="textarea"
           style={{ background: 'var(--rose-wash)', borderColor: 'rgba(168, 83, 100, 0.25)', minHeight: 90, marginTop: 8 }}
@@ -368,9 +381,14 @@ function Reframe({ onSave, lastReframes = [] }) {
           <span className="ui-sans" style={{ fontSize: 12, color: 'var(--ink-faint)' }}>
             {input.length}/500 · uses a model if available; otherwise reframes locally
           </span>
-          <button className="btn btn-forest" onClick={run} disabled={!input.trim() || loading}>
-            {loading ? 'Listening...' : 'Reframe gently'} <window.Icon name="arrowRight" size={16} />
-          </button>
+          <div className="cluster" style={{ justifyContent: 'flex-end', gap: 8 }}>
+            <button className="btn btn-ghost btn-tiny" onClick={onOpenCompanion}>
+              Too activating to write? Try Companion instead
+            </button>
+            <button className="btn btn-forest" onClick={run} disabled={!input.trim() || loading}>
+              {loading ? 'Listening...' : 'Reframe gently'} <window.Icon name="arrowRight" size={16} />
+            </button>
+          </div>
         </div>
       </div>
       {(output || err) && (

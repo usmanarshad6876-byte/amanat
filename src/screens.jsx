@@ -471,7 +471,7 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 // ────────────────────────────────────────────────────────────────────────────
 // TOOLS screen — full surface for breathing/grounding/reframe + mood + affirmations
 // ────────────────────────────────────────────────────────────────────────────
-function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
+function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCompanion, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
   const [cultureAnchor, setCultureAnchor] = useStateS(null);
@@ -662,7 +662,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, sub, show
       {!showSurvivorFirstVisit && tab === 'privacy' && <SharedDevicePanel lowTextMode={lowTextMode} />}
       {!showSurvivorFirstVisit && tab === 'modes' && <ModesPanel onOpenTool={onOpenTool} />}
       {!showSurvivorFirstVisit && tab === 'mood' && <MoodPanel store={store} onLogMood={onLogMood} />}
-      {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} />}
+      {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} onOpenCompanion={onOpenCompanion} />}
       {!showSurvivorFirstVisit && tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
       {!showSurvivorFirstVisit && tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
       {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
@@ -709,24 +709,51 @@ function HiddenResultsCard({ count, label, onShow }) {
   );
 }
 
-function speakText(text) {
+function speakText(text, handlers = {}) {
   if (!('speechSynthesis' in window)) {
     window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Read aloud is not available in this browser.' }));
     return;
   }
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(String(text || '').replace(/\s+/g, ' ').trim().slice(0, 900));
+  let cleanText = String(text || '');
+  if (/[<>]/.test(cleanText)) cleanText = cleanText.replace(/<[^>]*>/g, ' ');
+  cleanText = cleanText.replace(/\s+/g, ' ').trim();
+  if (cleanText.length > 900) {
+    window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Reading the first part — this card is long.' }));
+  }
+  const utterance = new SpeechSynthesisUtterance(cleanText.slice(0, 900));
   utterance.rate = 0.92;
   utterance.pitch = 1;
+  utterance.onstart = () => handlers.onStart?.();
+  utterance.onend = () => handlers.onEnd?.();
+  utterance.onerror = () => handlers.onEnd?.();
   window.speechSynthesis.speak(utterance);
 }
 
 function ReadAloudButton({ enabled, text }) {
+  const [isSpeaking, setIsSpeaking] = useStateS(false);
   if (!enabled) return null;
   return (
-    <button className="btn btn-soft btn-tiny" onClick={() => speakText(text)}>
-      <window.Icon name="play" size={14} /> Read aloud
-    </button>
+    <div className="cluster" style={{ gap: 6 }}>
+      <button
+        className="btn btn-soft btn-tiny"
+        title="Read this card aloud (browser voice)"
+        onClick={() => speakText(text, { onStart: () => setIsSpeaking(true), onEnd: () => setIsSpeaking(false) })}
+      >
+        <window.Icon name="play" size={14} /> Read aloud
+      </button>
+      {isSpeaking && (
+        <button
+          className="btn btn-ghost btn-tiny"
+          onClick={() => {
+            window.speechSynthesis?.cancel();
+            setIsSpeaking(false);
+          }}
+        >
+          <window.Icon name="close" size={14} /> Stop reading
+        </button>
+      )}
+    </div>
   );
 }
 

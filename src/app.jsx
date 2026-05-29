@@ -126,6 +126,7 @@ function App() {
     screen = <window.Screens.ToolsScreen
       t={t} store={store}
       onLogMood={onLogMood} onOpenTool={openTool} onSaveReframe={onSaveReframe}
+      onOpenCompanion={() => navigate('companion')}
       sub={route.params.tool || route.params.sub}
       showResearch={effectiveShowResearch}
       lowTextMode={!!tweaks.lowTextMode}
