@@ -123,11 +123,12 @@ function HomeNeedsPanel({ onNavigate, onOpenTool, onOpenPanic }) {
   );
 }
 
-function DayStatusPanel({ status = 'amber', onChange, onNavigate, onOpenTool }) {
+function DayStatusPanel({ status = 'amber', onChange, onNavigate, onOpenTool, onOpenPanic }) {
   const active = DAY_STATUS[status] || DAY_STATUS.amber;
   const go = () => {
-    if (status === 'green') onNavigate('tools', { sub: 'cards' });
-    else onNavigate('tools', { sub: 'roughday' });
+    if (status === 'red') onOpenPanic();
+    else if (status === 'amber') onNavigate('tools', { sub: 'guide' });
+    else onNavigate('tools', { sub: 'cards' });
   };
   return (
     <div className={"day-window-card day-window-" + active.tone}>
@@ -173,10 +174,17 @@ function HomeStandard({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, o
   const setDayStatus = (next) => {
     store.setState(prev => ({ ...prev, dayStatus: next }));
     window.dispatchEvent(new CustomEvent('amanat:toast', { detail: `Today marked as ${DAY_STATUS[next].label}.` }));
+    if (next === 'red') onOpenPanic();
+    else if (next === 'amber') onNavigate('tools', { sub: 'guide' });
+    else if (next === 'green') onNavigate('tools', { sub: 'cards' });
   };
 
   return (
     <div className="page">
+      <div className="reveal">
+        <DayStatusPanel status={dayStatus} onChange={setDayStatus} onNavigate={onNavigate} onOpenTool={onOpenTool} onOpenPanic={onOpenPanic} />
+      </div>
+
       <div className="reveal">
         <p className="eyebrow">{greeting(t)}</p>
         <h1 className="page-title">{t('home.subtitle')}</h1>
@@ -186,10 +194,6 @@ function HomeStandard({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, o
       <SafetyOpening onOpenPanic={onOpenPanic} />
 
       <HomeNeedsPanel onNavigate={onNavigate} onOpenTool={onOpenTool} onOpenPanic={onOpenPanic} />
-
-      <div className="reveal" style={{ marginTop: 18 }}>
-        <DayStatusPanel status={dayStatus} onChange={setDayStatus} onNavigate={onNavigate} onOpenTool={onOpenTool} />
-      </div>
 
       {/* Quick mood */}
       <div className="card reveal" style={{ marginTop: 18 }}>
@@ -279,6 +283,71 @@ function ToolSection({ title, intro, children }) {
         {children}
       </div>
     </section>
+  );
+}
+
+const PARTNER_TRANSLATIONS = {
+  profiles: [
+    { see: 'Withdrawal, silence, or going flat', help: 'Stay nearby without requiring conversation.' },
+    { see: 'Appeasement or sudden mood shift', help: 'Name what you notice once, gently. Do not interrogate.' },
+    { see: 'Freezing or inability to decide', help: 'Make one small decision for them. Ask permission first.' },
+  ],
+  shame: [
+    { see: 'Apologising too much or shrinking', help: 'Say clearly: “You are not in trouble with me.”' },
+    { see: 'Defensiveness after a small comment', help: 'Lower intensity. Repair the impact before explaining intent.' },
+    { see: 'Hiding needs or saying “it is fine”', help: 'Offer one concrete option instead of asking for a full explanation.' },
+  ],
+  loops: [
+    { see: 'Repeating the same fear or question', help: 'Answer once, then help them return to the room.' },
+    { see: 'Checking messages, tone, or timing', help: 'Be consistent and name when you will respond.' },
+    { see: 'Trying to solve everything immediately', help: 'Suggest one pause before decisions or hard talks.' },
+  ],
+  language: [
+    { see: 'Harsh self-labels like “dramatic” or “too much”', help: 'Reflect the feeling without using the label back.' },
+    { see: 'Difficulty accepting reassurance', help: 'Keep reassurance simple and repeatable. Do not argue.' },
+    { see: 'Fear that needs are a burden', help: 'Thank them for telling you one need, then follow through.' },
+  ],
+};
+
+const PARTNER_TRANSLATION_TABS = new Set(Object.keys(PARTNER_TRANSLATIONS));
+
+function PartnerTranslationBanner({ tab, onOpen }) {
+  if (!PARTNER_TRANSLATION_TABS.has(tab)) return null;
+  return (
+    <div className="card-sunk reveal" style={{ background: 'var(--forest-wash)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <p style={{ color: 'var(--ink-soft)' }}>You are viewing how this feels from the inside.</p>
+      <button className="btn btn-soft btn-tiny" onClick={() => onOpen(tab)}>
+        What this looks like from outside →
+      </button>
+    </div>
+  );
+}
+
+function PartnerTranslationModal({ tab, onClose }) {
+  const rows = PARTNER_TRANSLATIONS[tab] || [];
+  if (!rows.length) return null;
+  return (
+    <div className="modal-overlay" role="dialog" aria-label="Partner translation">
+      <div className="modal" style={{ maxWidth: 560 }}>
+        <div className="modal-head">
+          <div>
+            <div className="eyebrow">Partner view</div>
+            <h2 className="modal-title">What this can look like from outside</h2>
+          </div>
+          <button className="icon-btn" onClick={onClose} aria-label="Close"><window.Icon name="close" /></button>
+        </div>
+        <div className="modal-body">
+          <div className="stack">
+            {rows.map((row, i) => (
+              <div key={i} className="card-sunk" style={{ background: 'var(--paper-bright)' }}>
+                <p style={{ color: 'var(--ink-soft)' }}><strong>What you may see:</strong> {row.see}</p>
+                <p style={{ color: 'var(--forest)', marginTop: 6 }}><strong>What may help:</strong> {row.help}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -476,6 +545,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
   const [tab, setTab] = useStateS(sub || defaultTab);
   const [cultureAnchor, setCultureAnchor] = useStateS(null);
   const [showRoughDayLibrary, setShowRoughDayLibrary] = useStateS(false);
+  const [partnerTranslationTab, setPartnerTranslationTab] = useStateS(null);
   const firstVisit = useRefS(TOOLS_FIRST_VISIT_SESSION.current);
   const [firstVisitVersion, setFirstVisitVersion] = useStateS(0);
   const showBrowseLists = userRole !== 'survivor';
@@ -600,6 +670,10 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
         </>
       )}
 
+      {!showSurvivorFirstVisit && userRole === 'partner' && PARTNER_TRANSLATION_TABS.has(tab) && (
+        <PartnerTranslationBanner tab={tab} onOpen={setPartnerTranslationTab} />
+      )}
+
       {!showSurvivorFirstVisit && tab === 'feelings' && <FeelingEntryPanel onSelectTab={setTab} onOpenTool={onOpenTool} />}
       {!showSurvivorFirstVisit && tab === 'overview' && (
         <div className="stack reveal">
@@ -689,6 +763,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
       {!showSurvivorFirstVisit && tab === 'language' && <LanguagePanel data={window.AMANAT_CONTENT.languageGuide} eyebrowText="Old alarm says" eyebrowSafe="Steadiness says" intro="These shifts are not corrections to force on anyone. They are gentler alternatives, when the nervous system is ready for one." />}
       {!showSurvivorFirstVisit && tab === 'loops' && <LanguagePanel data={window.AMANAT_CONTENT.mindLoops} eyebrowText="Loop says" eyebrowSafe="Grounding says" intro="These patterns are about what the mind has learned to believe about thinking, remembering, scanning, feeling, and healing." />}
       {!showSurvivorFirstVisit && tab === 'affirm' && <AffirmPanel store={store} />}
+      {partnerTranslationTab && <PartnerTranslationModal tab={partnerTranslationTab} onClose={() => setPartnerTranslationTab(null)} />}
     </div>
   );
 }
