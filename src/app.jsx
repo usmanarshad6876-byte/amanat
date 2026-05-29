@@ -171,7 +171,7 @@ function App() {
       {modal === 'grounding' && <window.Tools.Grounding onClose={closeTool} />}
       {modal === 'public'    && <window.Tools.PublicGrounding onClose={closeTool} />}
       {modal === 'danger'    && <window.Tools.DangerNow onClose={closeTool} onOpenPublic={() => { closeTool(); setTimeout(() => setModal('public'), 50); }} onOpenCompanion={() => { closeTool(); navigate('companion'); }} />}
-      {modal === 'checkin'   && <window.Tools.CheckIn onClose={closeTool} onLogMood={(m) => onLogMood(m)} onNavigate={(id) => { if (['breathing','grounding','public','danger','reframe','journal'].includes(id)) { if (id === 'reframe') navigate('tools', { tool: 'reframe' }); else if (id === 'journal') navigate('journal'); else openTool(id); } else { navigate(id); } }} />}
+      {modal === 'checkin'   && <window.Tools.CheckIn onClose={closeTool} onLogMood={(m) => onLogMood(m)} onNavigate={(id) => { if (['breathing','grounding','public','danger','reframe','journal','affirm'].includes(id)) { if (id === 'reframe') navigate('tools', { tool: 'reframe' }); else if (id === 'affirm') navigate('tools', { sub: 'affirm' }); else if (id === 'journal') navigate('journal'); else openTool(id); } else { navigate(id); } }} />}
       {modal === 'panic'     && <window.Tools.Panic onClose={closeTool}
           onOpenBreathing={() => { closeTool(); setTimeout(() => setModal('breathing'), 50); }}
           onOpenGrounding={() => { closeTool(); setTimeout(() => setModal('grounding'), 50); }}

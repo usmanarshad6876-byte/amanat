@@ -414,9 +414,19 @@ function CheckIn({ onClose, onLogMood, onNavigate }) {
   const [bodyParts, setBodyParts] = useStateT([]);
   const [whatsUp, setWhatsUp] = useStateT(null);
   const [note, setNote] = useStateT('');
+  const whatsUpOptions = useMemoT(() => [
+    ...window.AMANAT_CONTENT.whatsUp,
+    { id: 'alone', label: 'Feeling alone' },
+    { id: 'night', label: 'It is nighttime' },
+    { id: 'memory', label: 'A memory came back' },
+  ], []);
 
   const suggest = useMemoT(() => {
     if (!mood) return null;
+    if ((mood.key === 'numb' || mood.key === 'flat') && bodyParts.length === 0) return { id: 'affirm', title: 'Read safe sentences', detail: 'No effort needed. Just words that do not demand.' };
+    if ((whatsUp === 'flashback' || whatsUp === 'memory')) return { id: 'grounding', title: 'Run 5-4-3-2-1', detail: 'Memory recall needs present-moment anchors first.' };
+    if (whatsUp === 'alone' || whatsUp === 'night') return { id: 'companion', title: 'Sit with Companion', detail: 'Night loneliness does not need analysis. Just presence.' };
+    if ((bodyParts.includes('jaw') || bodyParts.includes('shoulders')) && mood.key !== 'low') return { id: 'breathing', title: 'Try box breathing', detail: 'Jaw and shoulders carry tension before thoughts do.' };
     if (mood.key === 'low' || mood.key === 'flat') return { id: 'companion', title: 'Talk it through with Companion', detail: 'No advice. Just presence.' };
     if (bodyParts.includes('chest') || bodyParts.includes('throat')) return { id: 'breathing', title: 'Try box breathing', detail: 'Slows the chest. 4-4-4-4 for four rounds.' };
     if (bodyParts.includes('head') || whatsUp === 'flashback') return { id: 'grounding', title: 'Run 5-4-3-2-1', detail: 'Bring the senses back into the actual room.' };
@@ -485,7 +495,7 @@ function CheckIn({ onClose, onLogMood, onNavigate }) {
             <div className="stack">
               <p style={{ color: 'var(--ink-soft)' }}>If something pulled you here, name it. You can also leave it.</p>
               <div className="cluster" style={{ marginTop: 4 }}>
-                {window.AMANAT_CONTENT.whatsUp.map(w => (
+                {whatsUpOptions.map(w => (
                   <button key={w.id}
                     className={"chip" + (whatsUp === w.id ? ' chip-active' : '')}
                     onClick={() => setWhatsUp(w.id === whatsUp ? null : w.id)}
