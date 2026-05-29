@@ -2680,7 +2680,7 @@ function JournalScreen({ t, store, persistLocal, onOpenTool }) {
         <p className="page-lede">
           {persistLocal
             ? 'You\u2019ve chosen to keep entries on this device. They stay here until you delete them.'
-            : 'In session-only mode entries disappear when you close this tab. Toggle persistence in settings to keep them.'}
+            : 'Nothing is saved by default. Entries live only on this screen and disappear on refresh or close unless you choose to keep data on this device in Settings.'}
         </p>
       </div>
 
@@ -2729,7 +2729,7 @@ function JournalScreen({ t, store, persistLocal, onOpenTool }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, flexWrap: 'wrap', gap: 8 }}>
           <span className="ui-sans" style={{ fontSize: 12, color: 'var(--ink-faint)' }}>
             <window.Icon name="lock" size={12} style={{ verticalAlign: 'text-bottom', marginRight: 4 }} />
-            {persistLocal ? 'Stays on this device.' : 'Disappears when you close this tab.'}
+            {persistLocal ? 'Stays on this device.' : 'Memory-only. Gone on refresh or close.'}
           </span>
           <div className="cluster">
             <button className="btn btn-ghost btn-tiny" onClick={() => { if (confirm('Clear this draft?')) { setDraft(''); setPromptKey(null); } }}>Clear</button>
@@ -2745,7 +2745,9 @@ function JournalScreen({ t, store, persistLocal, onOpenTool }) {
         </div>
         {store.state.journalEntries.length === 0 && (
           <div className="card-sunk" style={{ color: 'var(--ink-faint)', fontStyle: 'italic' }}>
-            Nothing saved yet. Saved entries stay private to {persistLocal ? 'this device' : 'this session'}.
+            {persistLocal
+              ? 'Nothing saved yet. Saved entries stay private to this device.'
+              : 'Nothing saved yet. Entries are memory-only unless you choose to keep data on this device.'}
           </div>
         )}
         <div className="stack">
@@ -3046,7 +3048,7 @@ function CrisisPanel() {
 // ────────────────────────────────────────────────────────────────────────────
 // COMPANION screen
 // ────────────────────────────────────────────────────────────────────────────
-function CompanionScreen({ t, store }) {
+function CompanionScreen({ t, store, persistLocal }) {
   return (
     <div className="page page-narrow">
       <div className="reveal">
@@ -3056,7 +3058,7 @@ function CompanionScreen({ t, store }) {
           A gentle listener you can talk to. Not a therapist, not a crisis service. High-risk phrases are screened locally first so the app can show safety steps immediately. If a response needs the model, your message may be sent to that service.
         </p>
       </div>
-      <window.Companion thread={store.state.chatThread} onAddMsg={store.addChatMsg} onClear={store.clearChat} t={t} />
+      <window.Companion thread={store.state.chatThread} onAddMsg={store.addChatMsg} onClear={store.clearChat} t={t} persistLocal={persistLocal} />
     </div>
   );
 }

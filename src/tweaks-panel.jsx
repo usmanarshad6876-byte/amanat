@@ -78,6 +78,7 @@ const __TWEAKS_STYLE = `
     color:rgba(41,38,27,.72)}
   .twk-lbl>span:first-child{font-weight:500}
   .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+  .twk-help{font-size:11px;line-height:1.35;color:rgba(41,38,27,.58);margin-top:4px}
 
   .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
     color:rgba(41,38,27,.45);padding:10px 0 0}
@@ -347,13 +348,16 @@ function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', on
   );
 }
 
-function TweakToggle({ label, value, onChange }) {
+function TweakToggle({ label, value, onChange, description }) {
   return (
-    <div className="twk-row twk-row-h">
-      <div className="twk-lbl"><span>{label}</span></div>
-      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
-              role="switch" aria-checked={!!value}
-              onClick={() => onChange(!value)}><i /></button>
+    <div className="twk-row">
+      <div className="twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+                role="switch" aria-checked={!!value}
+                onClick={() => onChange(!value)}><i /></button>
+      </div>
+      {description && <p className="twk-help">{description}</p>}
     </div>
   );
 }

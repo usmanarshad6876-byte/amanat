@@ -137,7 +137,7 @@ function App() {
   } else if (route.name === 'journal') {
     screen = <window.Screens.JournalScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} safetyLanguage={tweaks.safetyLanguage || 'english'} />;
   } else if (route.name === 'companion') {
-    screen = <window.Screens.CompanionScreen t={t} store={store} />;
+    screen = <window.Screens.CompanionScreen t={t} store={store} persistLocal={persistLocal} />;
   } else if (route.name === 'help') {
     screen = <window.Screens.HelpScreen t={t} store={store} sub={route.params.sub} />;
   }
@@ -211,7 +211,10 @@ function App() {
           onChange={v => setTweak('accent', v)} />
 
         <window.TweakSection label="Privacy" />
-        <window.TweakToggle label="Keep on this device" value={persistLocal}
+        <window.TweakToggle
+          label="Keep my data on this device"
+          value={persistLocal}
+          description="Nothing is saved unless you choose this. Choosing it stores data in your browser only — it never leaves your device."
           onChange={v => setTweak('persistLocal', v)} />
         <window.TweakToggle label="Show panic button" value={tweaks.showPanic}
           onChange={v => setTweak('showPanic', v)} />

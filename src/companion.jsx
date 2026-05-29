@@ -123,7 +123,7 @@ function localCompanionReply(kind, text = '') {
       panic: 'Panic body ko bohat dara sakta hai. Abhi pehla qadam: dono paon zameen par, teen cheezen dekhein, aur ek slow breath lein. Agar chest pain severe/new ho ya saans bohat mushkil ho, medical help lein.',
       flashback: 'Yeh memory/body alarm ho sakta hai, final proof nahi ke aap wahan wapas hain. Aaj ki tareekh, room ka naam, aur ek object jo us waqt nahi tha naam lein.',
       csa: 'Main aap par yaqeen karta/karti hoon. Jo hua woh aap ki ghalti nahi thi, aur yahan details dena zaroori nahi. Safety aur support pehle: ek trusted safe shakhs, Sahil/Rozan/Umang, ya trauma-informed professional se rabta karein.',
-      privacy: 'Privacy ke baare mein seedhi baat: mood/journal is browser session/device mein rehte hain agar persistence on ho. Companion/Reframe reply banane ke liye text model service ko bhej sakte hain. Agar device shared hai to sensitive details na likhein.',
+      privacy: 'Privacy ke baare mein seedhi baat: default par mood, journal, aur chat browser storage mein save nahi hotay. Agar aap “Keep my data on this device” choose karein to data sirf is browser mein localStorage mein rehta hai. Companion/Reframe reply banane ke liye text model service ko bhej sakte hain.',
       adviceBoundary: 'Yeh bara decision hai, aur main ek message se aap ki zindagi direct nahi karunga/karungi. Isay chhota karte hain: kaunsa contact unsafe hai, kaunsa tolerable hai, aur aglay haftay ke liye ek protective boundary kya ho sakti hai?',
       anger: 'Ghussa signal ho sakta hai ke kuch important violate hua. Abhi isay safe route dein: line likhein, body ko move karein, ya ek boundary choose karein jo danger na barhaye.',
     };
@@ -138,7 +138,7 @@ function localCompanionReply(kind, text = '') {
     panic: 'Chest tightness can feel frightening. You can choose: breathe slowly if that feels okay, orient to three objects in the room, or call/message someone if you feel unsafe. If chest pain is severe, new, or comes with fainting or trouble breathing, seek medical help.',
     flashback: 'That smell can be a memory signal, and it can feel very present. Look around for three pieces of evidence that this is today: the date, the room, and one object that was not there back then.',
     csa: 'I believe you. What happened was not your fault, and you do not have to give details here. The next step is safety and support, not pressure: choose one trusted person or specialist support such as Sahil, Rozan, Umang, or a trauma-informed clinician.',
-    privacy: 'Important truth: journal and mood entries stay in this browser session or on this device if you turn persistence on. Companion and Reframe may send your text to a model service to generate a reply. Do not type anything here that would put you at risk if someone else accessed the device or service logs.',
+    privacy: 'Important truth: mood, journal, and chat are not saved to browser storage by default. If you choose “Keep my data on this device,” they are stored only in this browser. Companion and Reframe may send your text to a model service to generate a reply.',
     adviceBoundary: 'That is a big decision, and I should not direct your life from one message. We can slow it into options: what contact feels unsafe, what contact feels tolerable, and what boundary would protect you for the next week?',
     anger: 'That anger makes sense as a signal that something mattered and something was violated. Before acting, give it a safe route: write the revenge sentence privately, move your body hard for one minute, or choose one protective boundary that does not create more danger.',
   };
@@ -474,7 +474,7 @@ function localSupportReply(text, thread = []) {
     : 'I am here with you. You do not have to make this neat before it is allowed to matter. First step: feet on the floor, name one neutral thing, and take one slow breath.';
 }
 
-function Companion({ thread, onAddMsg, onClear, t }) {
+function Companion({ thread, onAddMsg, onClear, t, persistLocal = false }) {
   const [draft, setDraft] = React.useState('');
   const [thinking, setThinking] = React.useState(false);
   const [err, setErr] = React.useState('');
@@ -634,7 +634,10 @@ function Companion({ thread, onAddMsg, onClear, t }) {
       )}
 
       <p style={{ fontSize: 12, color: 'var(--ink-faint)', textAlign: 'center', marginTop: 4 }}>
-        Saved chat history stays in this browser session/device. Messages may be sent to a model service for replies. <a href="#" onClick={(e) => { e.preventDefault(); onClear(); }}>Clear local chat now</a>.
+        {persistLocal
+          ? 'You chose to keep chat on this browser. Messages may be sent to a model service for replies. '
+          : 'Chat is not saved by default and disappears on refresh or close. Messages may be sent to a model service for replies. '}
+        <a href="#" onClick={(e) => { e.preventDefault(); onClear(); }}>Clear local chat now</a>.
       </p>
 
       {err && <p style={{ fontSize: 13, color: 'var(--rose)' }}>{err}</p>}

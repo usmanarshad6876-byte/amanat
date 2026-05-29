@@ -7,21 +7,16 @@ const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 const STORAGE_KEY = 'amanat.v1';
 
-function loadFromStorage(useLocal) {
-  const store = useLocal ? window.localStorage : window.sessionStorage;
+function loadFromStorage() {
   try {
-    const raw = store.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) { return null; }
 }
 
-function saveToStorage(useLocal, data) {
-  const store = useLocal ? window.localStorage : window.sessionStorage;
-  try { store.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+function saveToStorage(data) {
+  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
 }
-
-// We only write to the active store; never clear the other automatically — that
-// way toggling persistLocal doesn't wipe data the user might want back.
 
 const DEFAULT_STATE = {
   moodLog: [],
@@ -51,13 +46,17 @@ function cleanLoadedState(state) {
 
 window.useAppStore = function useAppStore(persistLocal) {
   const [state, setStateRaw] = useState(() => {
-    // Read from local if user has previously enabled it
-    const initial = cleanLoadedState(loadFromStorage(true) || loadFromStorage(false)) || DEFAULT_STATE;
+    const initial = persistLocal ? cleanLoadedState(loadFromStorage()) : null;
     return { ...DEFAULT_STATE, ...initial };
   });
 
   useEffect(() => {
-    saveToStorage(persistLocal, state);
+    try { window.sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    if (persistLocal) {
+      saveToStorage(state);
+    } else {
+      try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    }
   }, [state, persistLocal]);
 
   const setState = useCallback((updater) => {
