@@ -20,16 +20,18 @@ function BoxBreathing({ onClose }) {
   const [phase, setPhase] = useStateT(0);
   const [total] = useStateT(4);
   const [paused, setPaused] = useStateT(false);
+  const [completed, setCompleted] = useStateT(false);
+  const [showCompletionActions, setShowCompletionActions] = useStateT(false);
 
   useEffectT(() => {
-    if (paused) return;
+    if (paused || completed) return;
     const id = setTimeout(() => {
       setPhase(p => {
         const next = (p + 1) % PHASES.length;
         if (next === 0) {
           setRound(r => {
             if (r >= total) {
-              setTimeout(() => onClose && onClose('done'), 200);
+              setCompleted(true);
               return r;
             }
             return r + 1;
@@ -39,7 +41,22 @@ function BoxBreathing({ onClose }) {
       });
     }, 4000);
     return () => clearTimeout(id);
-  }, [phase, paused, total, onClose]);
+  }, [phase, paused, completed, total]);
+
+  useEffectT(() => {
+    if (!completed) return;
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const id = setTimeout(() => setShowCompletionActions(true), reduceMotion ? 500 : 3000);
+    return () => clearTimeout(id);
+  }, [completed]);
+
+  const resetRounds = () => {
+    setRound(1);
+    setPhase(0);
+    setPaused(false);
+    setCompleted(false);
+    setShowCompletionActions(false);
+  };
 
   const p = PHASES[phase];
   return (
@@ -51,19 +68,32 @@ function BoxBreathing({ onClose }) {
         <div className="breathe-halo" />
         <div className="breathe-halo" />
         <div className="breathe-halo" />
-        <div className={"breathe-ring " + p.cls} />
+        <div className={"breathe-ring " + (completed ? 'rest' : p.cls)} />
       </div>
-      <div className="breathe-instruction">{p.text}</div>
-      <div className="breathe-counter">Round {round} of {total} · 4-4-4-4</div>
-      <p style={{ maxWidth: 320, textAlign: 'center', color: 'var(--ink-soft)', fontSize: 14 }}>
-        If holding your breath feels scary, skip the hold and look for three ordinary objects in the room.
-      </p>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button className="btn btn-ghost" onClick={() => setPaused(x => !x)}>
-          <window.Icon name={paused ? 'play' : 'pause'} size={16} /> {paused ? 'Resume' : 'Pause'}
-        </button>
-        <button className="btn btn-soft" onClick={() => onClose && onClose('cancelled')}>End</button>
-      </div>
+      <div className="breathe-instruction">{completed ? 'That was four rounds. Take a moment before moving.' : p.text}</div>
+      <div className="breathe-counter">{completed ? 'Complete · 4 rounds' : `Round ${round} of ${total} · 4-4-4-4`}</div>
+      {!completed && (
+        <p style={{ maxWidth: 320, textAlign: 'center', color: 'var(--ink-soft)', fontSize: 14 }}>
+          If holding your breath feels scary, skip the hold and look for three ordinary objects in the room.
+        </p>
+      )}
+      {completed ? (
+        <div className="breathe-completion-actions" data-ready={showCompletionActions ? '1' : '0'} aria-hidden={!showCompletionActions}>
+          {showCompletionActions && (
+            <>
+              <button className="btn btn-ghost" onClick={resetRounds}>Do another round</button>
+              <button className="btn btn-soft" onClick={() => onClose && onClose('done')}>Close gently</button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button className="btn btn-ghost" onClick={() => setPaused(x => !x)}>
+            <window.Icon name={paused ? 'play' : 'pause'} size={16} /> {paused ? 'Resume' : 'Pause'}
+          </button>
+          <button className="btn btn-soft" onClick={() => onClose && onClose('cancelled')}>End</button>
+        </div>
+      )}
     </div>
   );
 }

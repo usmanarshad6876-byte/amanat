@@ -773,6 +773,7 @@ p { margin: 0; max-width: 64ch; }
 .breathe-ring.expand { transform: scale(1.8); }
 .breathe-ring.hold-in, .breathe-ring.hold-out { transform: scale(1.8); transition-duration: 4s; }
 .breathe-ring.shrink { transform: scale(1); }
+.breathe-ring.rest { transform: scale(1); transition-duration: 0.8s; }
 .breathe-halo {
   position: absolute; inset: 0; border-radius: 50%;
   border: 1px dashed rgba(58, 107, 74, 0.35);
@@ -782,6 +783,23 @@ p { margin: 0; max-width: 64ch; }
 .breathe-halo:nth-of-type(3) { transform: scale(1.3); border-color: rgba(58, 107, 74, 0.08); }
 .breathe-instruction { font-family: var(--font-display); font-style: italic; font-size: 36px; color: var(--ink); }
 .breathe-counter { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 12px 0 28px; }
+.breathe-completion-actions {
+  min-height: 42px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--motion-slow);
+}
+.breathe-completion-actions[data-ready="1"] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .breathe-ring,
+  .breathe-ring.rest,
+  .breathe-completion-actions {
+    transition-duration: 0.01ms;
+  }
+}
 
 /* ─── MODAL ───────────────────────────────────────────────────────── */
 .modal-overlay {
