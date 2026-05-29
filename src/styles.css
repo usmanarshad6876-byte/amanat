@@ -646,14 +646,15 @@ p { margin: 0; max-width: 64ch; }
 
 .quick-exit-btn {
   position: fixed;
-  right: 86px;
-  bottom: 24px;
-  z-index: 120;
+  top: max(env(safe-area-inset-top), 8px);
+  right: max(env(safe-area-inset-right), 8px);
+  bottom: auto;
+  z-index: 10000;
   border: 1px solid var(--ink-line);
   background: #ffffff;
   color: var(--ink-soft);
   border-radius: var(--r-pill);
-  padding: 8px 12px;
+  padding: 7px 12px;
   box-shadow: var(--shadow-paper);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -668,8 +669,9 @@ p { margin: 0; max-width: 64ch; }
     height: 48px;
   }
   .quick-exit-btn {
-    right: 16px;
-    bottom: calc(env(safe-area-inset-bottom) + 88px);
+    top: max(env(safe-area-inset-top), 8px);
+    right: max(env(safe-area-inset-right), 8px);
+    bottom: auto;
   }
   .page { padding: 28px 16px 118px; }
   .page-title { font-size: 34px; }

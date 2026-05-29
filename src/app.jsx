@@ -70,10 +70,9 @@ function App() {
   const openTool = (kind) => setModal(kind);
   const closeTool = () => setModal(null);
   const quickExit = useCallbackA(() => {
-    store.wipeAll();
-    document.title = 'Notes';
-    document.body.innerHTML = '<main style="font:16px system-ui;padding:24px;color:#222"><h1 style="font-size:20px">Notes</h1><p>No notes yet.</p></main>';
-    window.history.replaceState(null, '', '/');
+    try { store.wipeAll(); } catch (e) {}
+    try { window.sessionStorage.clear(); } catch (e) {}
+    window.location.replace('https://www.google.com/');
   }, [store]);
 
   const [toast, showToast] = window.useToast();
