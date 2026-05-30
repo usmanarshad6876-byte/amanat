@@ -99,24 +99,6 @@ function detectLocalSafety(text) {
   const has = (patterns) => patterns.some((p) => p.test(s));
 
   if (has([
-    /\b(kill myself|end my life|suicide|suicidal|don'?t want to exist|do not want to exist|want to die|wish i was dead|i can'?t live)\b/,
-    /\b(khudkushi|khud kushi|marna chahta|marna chahti|zinda nahi rehna|jeena nahi|main mar jaun|mai mar jaun)\b/,
-    /(خودکشی|مرنا چاہ|جینا نہیں|زندہ نہیں)/,
-  ])) return 'suicide';
-
-  if (has([
-    /\b(cut myself|hurt myself|self harm|self-harm|harm myself|blade|razor|pills tonight|overdose)\b/,
-    /\b(apne aap ko kaat|khud ko kaat|chaku|bottle se kaat|zakhmi karna|goliyaan)\b/,
-    /(خود کو کاٹ|بلیڈ|چاقو|زخمی|گولیاں)/,
-  ])) return 'selfHarm';
-
-  if (has([
-    /\b(shouting outside my room|outside my room|he is shouting|he's shouting|hit me|hurt me|threatening me|break down the door|coming for me|not safe at home)\b/,
-    /\b(kamray ke bahar|darwazay ke bahar|cheekh raha|cheekh rahi|maar dega|maar degi|ghar mein khatra|mehfooz nahi)\b/,
-    /(کمرے کے باہر|دروازے کے باہر|چیخ رہا|مار دے|محفوظ نہیں|خطرہ)/,
-  ])) return 'activeDanger';
-
-  if (has([
     /\b(not in my body|outside my body|feel unreal|dissociat|floating away|not real)\b/,
   ])) return 'dissociation';
 
@@ -513,7 +495,9 @@ function localSupportReply(text, thread = []) {
     : 'I am here with you. You do not have to make this neat before it is allowed to matter. First step: feet on the floor, name one neutral thing, and take one slow breath.';
 }
 
-function Companion({ thread, onAddMsg, onClear, t, persistLocal = false }) {
+const CRISIS_GATE_MESSAGE = 'It sounds like things are very hard right now. Before we continue, here is immediate support.';
+
+function Companion({ thread, onAddMsg, onClear, t, persistLocal = false, onCrisisMatch, onOpenSafety }) {
   const [draft, setDraft] = React.useState('');
   const [thinking, setThinking] = React.useState(false);
   const [err, setErr] = React.useState('');
@@ -528,6 +512,18 @@ function Companion({ thread, onAddMsg, onClear, t, persistLocal = false }) {
     if (!text || thinking) return;
     setDraft('');
     setErr('');
+    const crisisMatch = window.AMANAT_SAFETY?.matchCrisis(text);
+    if (crisisMatch) {
+      onCrisisMatch && onCrisisMatch({
+        source: 'companion',
+        category: crisisMatch.category,
+        kind: crisisMatch.kind,
+      });
+      onAddMsg({ role: 'me', text, at: Date.now() });
+      onAddMsg({ role: 'them', text: CRISIS_GATE_MESSAGE, at: Date.now(), safetyKind: crisisMatch.kind });
+      onOpenSafety && window.setTimeout(onOpenSafety, 0);
+      return;
+    }
     const localSafetyKind = detectLocalSafety(text);
     onAddMsg({ role: 'me', text, at: Date.now() });
     if (localSafetyKind) {

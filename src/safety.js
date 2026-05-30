@@ -1,6 +1,8 @@
 // safety.js — local high-risk phrase detection and safety copy.
 // Vite module. Exposes window.AMANAT_SAFETY.
 
+import { CRISIS_PHRASES } from './safety/crisisPhrases.js';
+
 function normalizeSafetyText(text = '') {
   return String(text)
     .toLowerCase()
@@ -12,26 +14,16 @@ function hasAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
+function matchCrisisPhrase(text) {
+  const s = normalizeSafetyText(text);
+  const match = CRISIS_PHRASES.find(item => hasAny(s, item.patterns));
+  return match ? { category: match.category, kind: match.kind } : null;
+}
+
 function detectSafetyKind(text) {
   const s = normalizeSafetyText(text);
-
-  if (hasAny(s, [
-    /\b(kill myself|end my life|suicide|suicidal|don'?t want to exist|do not want to exist|want to die|wish i was dead|i can'?t live|better off dead|no reason to live)\b/,
-    /\b(khudkushi|khud kushi|marna chahta|marna chahti|zinda nahi rehna|jeena nahi|main mar jaun|mai mar jaun)\b/,
-    /(خودکشی|مرنا چاہ|جینا نہیں|زندہ نہیں)/,
-  ])) return 'suicide';
-
-  if (hasAny(s, [
-    /\b(cut myself|hurt myself|self harm|self-harm|harm myself|blade|razor|pills tonight|overdose|burn myself|punish myself|make myself bleed)\b/,
-    /\b(apne aap ko kaat|khud ko kaat|chaku|bottle se kaat|zakhmi karna|goliyaan)\b/,
-    /(خود کو کاٹ|بلیڈ|چاقو|زخمی|گولیاں)/,
-  ])) return 'selfHarm';
-
-  if (hasAny(s, [
-    /\b(shouting outside my room|outside my room|he is shouting|he's shouting|hit me|hurt me|threatening me|break down the door|coming for me|not safe at home|locked me in|won'?t let me leave)\b/,
-    /\b(kamray ke bahar|darwazay ke bahar|cheekh raha|cheekh rahi|maar dega|maar degi|ghar mein khatra|mehfooz nahi)\b/,
-    /(کمرے کے باہر|دروازے کے باہر|چیخ رہا|مار دے|محفوظ نہیں|خطرہ)/,
-  ])) return 'activeDanger';
+  const crisisMatch = matchCrisisPhrase(text);
+  if (crisisMatch) return crisisMatch.kind;
 
   if (hasAny(s, [
     /\b(monitoring my phone|checks my phone|tracking my location|won'?t let me leave|forced me|forcing me|blackmail|threatens to expose|took my phone|took my documents|controls my money|won'?t let me work|won'?t let me study|forced marriage|marry him|marry her|pressuring me for sex|pressured me for sex)\b/,
@@ -79,6 +71,7 @@ function safetyReply(kind) {
 
 window.AMANAT_SAFETY = {
   detect: detectSafetyKind,
+  matchCrisis: matchCrisisPhrase,
   isUrgent: isUrgentSafetyKind,
   reply: safetyReply,
 };

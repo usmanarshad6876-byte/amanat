@@ -15,7 +15,7 @@ function loadFromStorage() {
 }
 
 function saveToStorage(data) {
-  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stripVolatileState(data))); } catch (e) {}
 }
 
 const DEFAULT_STATE = {
@@ -24,10 +24,16 @@ const DEFAULT_STATE = {
   reframeLog: [],
   savedScripts: [],
   chatThread: [],
+  crisisAudit: { matches: [] },
   affirmIdx: 0,
   dayStatus: 'amber',
   hasOnboarded: false,
 };
+
+function stripVolatileState(state) {
+  const { crisisAudit, ...rest } = state || {};
+  return rest;
+}
 
 function isLegacyCompanionError(msg) {
   const text = String(msg?.text || '').toLowerCase();
@@ -38,10 +44,11 @@ function isLegacyCompanionError(msg) {
 
 function cleanLoadedState(state) {
   if (!state) return state;
+  const { crisisAudit, ...persisted } = state;
   const chatThread = Array.isArray(state.chatThread)
     ? state.chatThread.filter(msg => !isLegacyCompanionError(msg))
     : [];
-  return { ...state, chatThread };
+  return { ...persisted, chatThread };
 }
 
 window.useAppStore = function useAppStore(persistLocal) {
@@ -102,6 +109,24 @@ window.useAppStore = function useAppStore(persistLocal) {
     setStateRaw(prev => ({ ...prev, chatThread: [] }));
   }, []);
 
+  const logCrisisAudit = useCallback((match) => {
+    if (!match?.category) return null;
+    const entry = {
+      id: 'c' + Date.now(),
+      at: Date.now(),
+      category: match.category,
+      kind: match.kind || null,
+      source: match.source || 'unknown',
+    };
+    setStateRaw(prev => ({
+      ...prev,
+      crisisAudit: {
+        matches: [entry, ...(prev.crisisAudit?.matches || [])],
+      },
+    }));
+    return entry;
+  }, []);
+
   const wipeAll = useCallback(() => {
     try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     try { window.sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
@@ -118,6 +143,7 @@ window.useAppStore = function useAppStore(persistLocal) {
     toggleSavedScript,
     addChatMsg,
     clearChat,
+    logCrisisAudit,
     wipeAll,
   };
 };

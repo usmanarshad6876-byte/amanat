@@ -2976,15 +2976,32 @@ function AffirmPanel({ store }) {
 // ────────────────────────────────────────────────────────────────────────────
 // JOURNAL screen
 // ────────────────────────────────────────────────────────────────────────────
+const CRISIS_GATE_MESSAGE = 'It sounds like things are very hard right now. Before we continue, here is immediate support.';
+
 function JournalScreen({ t, store, persistLocal, onOpenTool }) {
   const [draft, setDraft] = useStateS('');
   const [promptKey, setPromptKey] = useStateS(null);
   const [open, setOpen] = useStateS(true);
   const [safetyAfterSave, setSafetyAfterSave] = useStateS(null);
+  const lastCrisisAuditKey = useRefS('');
   const date = useMemoS(() => new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }), []);
   const words = draft.trim() ? draft.trim().split(/\s+/).length : 0;
+  const crisisMatch = draft.trim() ? window.AMANAT_SAFETY?.matchCrisis(draft) : null;
   const safetyKind = draft.trim() ? window.AMANAT_SAFETY?.detect(draft) : null;
   const urgentSafety = window.AMANAT_SAFETY?.isUrgent(safetyKind);
+
+  useEffectS(() => {
+    if (!crisisMatch) return;
+    const auditKey = `${crisisMatch.category}:${crisisMatch.kind}:${draft.trim().length}`;
+    if (auditKey === lastCrisisAuditKey.current) return;
+    lastCrisisAuditKey.current = auditKey;
+    store.logCrisisAudit && store.logCrisisAudit({
+      source: 'journal',
+      category: crisisMatch.category,
+      kind: crisisMatch.kind,
+    });
+    onOpenTool && onOpenTool('danger');
+  }, [crisisMatch?.category, crisisMatch?.kind, draft, onOpenTool, store]);
 
   const seedPrompt = (p) => {
     setPromptKey(p.key);
@@ -3034,8 +3051,10 @@ function JournalScreen({ t, store, persistLocal, onOpenTool }) {
               {urgentSafety ? 'Safety check' : 'Grounding check'}
             </p>
             <p style={{ color: 'var(--ink-soft)', marginTop: 6 }}>
-              {urgentSafety
-                ? 'This sounds urgent. You can save the entry, but first consider opening the safety flow or contacting one real person now.'
+              {crisisMatch
+                ? CRISIS_GATE_MESSAGE
+                : urgentSafety
+                  ? 'This sounds urgent. You can save the entry, but first consider opening the safety flow or contacting one real person now.'
                 : window.AMANAT_SAFETY?.reply(safetyKind)}
             </p>
             {urgentSafety && (
@@ -3375,7 +3394,7 @@ function CrisisPanel() {
 // ────────────────────────────────────────────────────────────────────────────
 // COMPANION screen
 // ────────────────────────────────────────────────────────────────────────────
-function CompanionScreen({ t, store, persistLocal }) {
+function CompanionScreen({ t, store, persistLocal, onOpenTool }) {
   return (
     <div className="page page-narrow">
       <div className="reveal">
@@ -3385,7 +3404,15 @@ function CompanionScreen({ t, store, persistLocal }) {
           A gentle listener you can talk to. Not a therapist, not a crisis service. High-risk phrases are screened locally first so the app can show safety steps immediately. If a response needs the model, your message may be sent to that service.
         </p>
       </div>
-      <window.Companion thread={store.state.chatThread} onAddMsg={store.addChatMsg} onClear={store.clearChat} t={t} persistLocal={persistLocal} />
+      <window.Companion
+        thread={store.state.chatThread}
+        onAddMsg={store.addChatMsg}
+        onClear={store.clearChat}
+        onCrisisMatch={store.logCrisisAudit}
+        onOpenSafety={() => onOpenTool && onOpenTool('danger')}
+        t={t}
+        persistLocal={persistLocal}
+      />
     </div>
   );
 }

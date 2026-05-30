@@ -138,7 +138,7 @@ function App() {
   } else if (route.name === 'journal') {
     screen = <window.Screens.JournalScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} safetyLanguage={tweaks.safetyLanguage || 'english'} />;
   } else if (route.name === 'companion') {
-    screen = <window.Screens.CompanionScreen t={t} store={store} persistLocal={persistLocal} />;
+    screen = <window.Screens.CompanionScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} />;
   } else if (route.name === 'help') {
     screen = <window.Screens.HelpScreen t={t} store={store} sub={route.params.sub} />;
   }
