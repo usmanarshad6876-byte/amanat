@@ -565,35 +565,35 @@ function CheckIn({ onClose, onLogMood, onNavigate }) {
 // DangerNow — physical safety before emotional grounding.
 // ────────────────────────────────────────────────────────────────────────────
 function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
+  const t = window.useI18n();
   const [showOffline, setShowOffline] = useStateT(false);
-  const trustedMessage = 'I am not safe. I cannot explain right now. Please call me or help me reach a safer place.';
+  const trustedMessage = t('crisis.trustedMessage');
+  const crisisSteps = t('crisis.steps', { returnObjects: true });
+  const offlineSteps = t('crisis.offlineSteps', { returnObjects: true });
   const copyTrustedMessage = async () => {
     const ok = await window.copyToClipboard(trustedMessage);
-    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Safety message copied.' }));
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: t('crisis.copiedToast') }));
   };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-label="I am not safe">
+    <div className="modal-overlay" role="dialog" aria-label={t('crisis.aria')}>
       <div className="modal" style={{ maxWidth: 560, background: 'var(--paper-bright)' }}>
         <div className="modal-head">
           <div>
-            <div className="eyebrow" style={{ color: 'var(--crisis)' }}>Right now</div>
-            <h2 className="modal-title">I am not safe.</h2>
+            <div className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('crisis.eyebrow')}</div>
+            <h2 className="modal-title">{t('crisis.title')}</h2>
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="Close"><window.Icon name="close" /></button>
+          <button className="icon-btn" onClick={onClose} aria-label={t('common.close')}><window.Icon name="close" /></button>
         </div>
         <div className="modal-body">
           <div className="card-sunk" style={{ background: 'var(--rose-wash)', marginBottom: 14 }}>
-            <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Safety first</p>
+            <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('crisis.safetyFirst')}</p>
             <p style={{ color: 'var(--ink-soft)', marginTop: 6 }}>
-              This is for physical danger, coercion, severe dissociation, or risk of self-harm. Do not use calming tools instead of getting away, calling someone, or reaching emergency help.
+              {t('crisis.body')}
             </p>
           </div>
           <ol style={{ paddingLeft: 22, margin: '0 0 16px', color: 'var(--ink-soft)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <li>Move toward people, light, an exit, a lock, or a public place if you can.</li>
-            <li>Keep your phone with you. Avoid arguing through a door or in a closed room.</li>
-            <li>If you may hurt yourself, move away from blades, pills, cords, weapons, or heights.</li>
-            <li>Call one real person now. Stay connected until the danger has passed.</li>
+            {(Array.isArray(crisisSteps) ? crisisSteps : []).map(step => <li key={step}>{step}</li>)}
           </ol>
           <div className="stack">
             {CRISIS_CALLS.map(call => (
@@ -605,36 +605,34 @@ function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
               />
             ))}
             <button className="btn btn-ghost btn-block" onClick={() => setShowOffline(true)}>
-              I still can't reach anyone
+              {t('crisis.stillCantReach')}
             </button>
           </div>
           {showOffline && (
             <div className="card-sunk" style={{ background: 'var(--paper-bright)', marginTop: 14 }}>
-              <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Offline safety card</p>
+              <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('crisis.offlineTitle')}</p>
               <ol style={{ paddingLeft: 20, margin: '8px 0 0', color: 'var(--ink-soft)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <li>Leave the room if you can. If leaving is not possible, lock the door or move closer to an exit, light, or another person.</li>
-                <li>Name 5 things you can see. Keep your eyes moving around the room.</li>
-                <li>Copy this message and text it to a trusted contact when you can.</li>
+                {(Array.isArray(offlineSteps) ? offlineSteps : []).map(step => <li key={step}>{step}</li>)}
               </ol>
               <div className="phrase-card" style={{ marginTop: 12 }}>
-                <div className="phrase-label safe">Message to copy</div>
+                <div className="phrase-label safe">{t('crisis.messageToCopy')}</div>
                 <div className="phrase-text">"{trustedMessage}"</div>
               </div>
               <div className="cluster" style={{ marginTop: 12 }}>
                 <button className="btn btn-forest btn-tiny" onClick={copyTrustedMessage}>
-                  <window.Icon name="copy" size={14} /> Copy message
+                  <window.Icon name="copy" size={14} /> {t('crisis.copyMessage')}
                 </button>
                 <a className="btn btn-soft btn-tiny" href={`sms:?&body=${encodeURIComponent(trustedMessage)}`}>
-                  <window.Icon name="send" size={14} /> Open text
+                  <window.Icon name="send" size={14} /> {t('crisis.openText')}
                 </a>
               </div>
             </div>
           )}
           <div className="divider-dotted" />
-          <p className="eyebrow" style={{ marginBottom: 8 }}>If you need the screen to look neutral</p>
+          <p className="eyebrow" style={{ marginBottom: 8 }}>{t('crisis.neutralScreen')}</p>
           <div className="stack">
-            <button className="btn btn-ghost btn-block" onClick={onOpenPublic}><window.Icon name="shield" size={16} /> Open public-place mode</button>
-            <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> Open companion after contacting a person</button>
+            <button className="btn btn-ghost btn-block" onClick={onOpenPublic}><window.Icon name="shield" size={16} /> {t('crisis.openPublicMode')}</button>
+            <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> {t('crisis.openCompanion')}</button>
           </div>
         </div>
       </div>

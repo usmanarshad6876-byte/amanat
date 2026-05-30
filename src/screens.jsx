@@ -1121,6 +1121,7 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
             {selected.module && <span className="chip">{selected.module}</span>}
           </div>
           <h3 className="display" style={{ fontSize: 28, marginTop: 12 }}>{selected.title}</h3>
+          <DiagnosisInfoLabel />
           <div className="grid-2" style={{ marginTop: 14 }}>
             <div className="phrase-row threat">
               <div className="phrase-label threat">What may be happening</div>
@@ -1165,6 +1166,7 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
                 {card.risk && <span className={"chip chip-" + chipTone(card.risk, 'risk')}>{supportLabel(card.risk)}</span>}
               </div>
               <h3 className="display" style={{ fontSize: 19, marginTop: 10 }}>{card.title}</h3>
+              <DiagnosisInfoLabel />
               <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginTop: 6 }}>{card.grounding}</p>
               <p style={{ color: 'var(--ink-faint)', fontSize: 12, marginTop: 10 }}>{card.module} · {card.tags}</p>
             </button>
@@ -1267,6 +1269,7 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
             {selected.module && <span className="chip">{selected.module}</span>}
           </div>
           <h3 className="display" style={{ fontSize: 28, marginTop: 12 }}>{selected.trigger}</h3>
+          <DiagnosisInfoLabel />
           <div className="grid-2" style={{ marginTop: 14 }}>
             <div className="phrase-row threat">
               <div className="phrase-label threat">Shame may say</div>
@@ -1321,6 +1324,7 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
                 {card.risk && <span className={"chip chip-" + chipTone(card.risk, 'risk')}>{supportLabel(card.risk)}</span>}
               </div>
               <h3 className="display" style={{ fontSize: 19, marginTop: 10 }}>{card.trigger}</h3>
+              <DiagnosisInfoLabel />
               <p style={{ color: 'var(--rose)', fontSize: 14, marginTop: 6, fontStyle: 'italic' }}>{card.shameSentence}</p>
               <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginTop: 8 }}>{card.repair}</p>
               <p style={{ color: 'var(--ink-faint)', fontSize: 12, marginTop: 10 }}>{card.module} · {card.tags}</p>
@@ -1334,6 +1338,7 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
 }
 
 function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false, userRole = 'survivor', showClinicalTerms = false }) {
+  const t = window.useI18n();
   const deck = window.AMANAT_RESPONSE_PROFILE_CARDS || { meta: {}, cards: [] };
   const panelTitle = displayModuleTitle(
     { title: deck.meta.title || 'Trauma Response Profile', plainTitle: deck.meta.plainTitle || 'How my body learned to protect me' },
@@ -1415,9 +1420,9 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
       </div>
       {tapOnlyMode && <TapOnlyNote />}
       <div className="card-sunk" style={{ background: 'var(--paper-bright)' }}>
-        <p className="eyebrow">Not a diagnosis</p>
+        <p className="eyebrow">{t('diagnosis.panelTitle')}</p>
         <p style={{ color: 'var(--ink-soft)', marginTop: 6 }}>
-          These profiles describe protective patterns that can shift by context. Use them for self-understanding, not for diagnosing yourself or labelling someone else.
+          {t('diagnosis.panelBody')}
         </p>
       </div>
 
@@ -1430,6 +1435,7 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
             {selected.module && <span className="chip">{selected.module}</span>}
           </div>
           <h3 className="display" style={{ fontSize: 28, marginTop: 12 }}>{selected.trigger}</h3>
+          <DiagnosisInfoLabel />
 
           <div className="response-bars" style={{ marginTop: 16 }}>
             {[
@@ -1505,6 +1511,7 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
                 {card.dominantProfile && <span className="chip chip-forest">{card.dominantProfile}</span>}
               </div>
               <h3 className="display" style={{ fontSize: 19, marginTop: 10 }}>{card.trigger}</h3>
+              <DiagnosisInfoLabel />
               <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginTop: 6 }}>{card.protectionFunction}</p>
               <p style={{ color: 'var(--ink-faint)', fontSize: 12, marginTop: 10 }}>{card.secondaryResponses} · {card.module}</p>
             </button>
@@ -1695,6 +1702,13 @@ function shouldShowClinicalTerms(userRole = 'survivor', showClinicalTerms = fals
 
 function displayModuleTitle({ title, plainTitle }, userRole, showClinicalTerms) {
   return shouldShowClinicalTerms(userRole, showClinicalTerms) ? title : (plainTitle || title);
+}
+
+const DIAGNOSIS_INFO_LABEL_KEY = 'diagnosis.infoLabel';
+
+function DiagnosisInfoLabel() {
+  const t = window.useI18n();
+  return <p style={{ color: 'var(--ink-faint)', fontSize: 13, marginTop: 4 }}>{t(DIAGNOSIS_INFO_LABEL_KEY)}</p>;
 }
 
 const RECOVERY_MODULE_CONFIGS = {
@@ -1899,63 +1913,66 @@ const RECOVERY_MODULE_CONFIGS = {
 };
 
 function SafetyGatePanel({ moduleTitle, onContinue, onUnsafe, onOpenTool }) {
+  const t = window.useI18n();
+  const fallbackModule = t('safetyGate.fallbackModule');
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--forest-wash), var(--paper-bright))' }}>
-        <p className="eyebrow" style={{ color: 'var(--forest)' }}>Before opening {moduleTitle || 'this module'}</p>
-        <h2 className="display" style={{ fontSize: 28, marginTop: 6 }}>Check your safety level first.</h2>
-        <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>This keeps the app from asking for reflection when your body may need help, grounding, or distance.</p>
+        <p className="eyebrow" style={{ color: 'var(--forest)' }}>{t('safetyGate.beforeOpening', { moduleTitle: moduleTitle || fallbackModule })}</p>
+        <h2 className="display" style={{ fontSize: 28, marginTop: 6 }}>{t('safetyGate.title')}</h2>
+        <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('safetyGate.body')}</p>
       </div>
       <div className="grid-3">
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(179, 67, 56, 0.35)' }} onClick={() => { onUnsafe?.(); onOpenTool?.('danger'); }}>
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Red</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Not safe now</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Danger, self-harm risk, coercion, severe dissociation, or trapped environment.</p>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('safetyGate.redLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('safetyGate.redTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('safetyGate.redBody')}</p>
         </button>
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(192, 124, 42, 0.35)' }} onClick={() => onContinue?.('amber')}>
-          <p className="eyebrow" style={{ color: 'var(--amber)' }}>Amber</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Flooded but safe enough</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Open the module, but begin with the grounding step. No big decisions.</p>
+          <p className="eyebrow" style={{ color: 'var(--amber)' }}>{t('safetyGate.amberLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('safetyGate.amberTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('safetyGate.amberBody')}</p>
         </button>
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(58, 107, 74, 0.35)' }} onClick={() => onContinue?.('green')}>
-          <p className="eyebrow" style={{ color: 'var(--forest)' }}>Green</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Safe enough to reflect</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Continue to the selected card, script, and optional explanation.</p>
+          <p className="eyebrow" style={{ color: 'var(--forest)' }}>{t('safetyGate.greenLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('safetyGate.greenTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('safetyGate.greenBody')}</p>
         </button>
       </div>
       <div className="cluster">
-        <button className="btn btn-soft btn-tiny" onClick={() => onOpenTool?.('grounding')}><window.Icon name="grounding" size={14} /> Ground first</button>
-        <button className="btn btn-ghost btn-tiny" onClick={() => onOpenTool?.('public')}><window.Icon name="shield" size={14} /> Public mode</button>
+        <button className="btn btn-soft btn-tiny" onClick={() => onOpenTool?.('grounding')}><window.Icon name="grounding" size={14} /> {t('safetyGate.groundFirst')}</button>
+        <button className="btn btn-ghost btn-tiny" onClick={() => onOpenTool?.('public')}><window.Icon name="shield" size={14} /> {t('safetyGate.publicMode')}</button>
       </div>
     </div>
   );
 }
 
 function ConsentGatePanel({ onContinue, onUnsafe, onOpenTool }) {
+  const t = window.useI18n();
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--forest-wash), var(--paper-bright))' }}>
-        <p className="eyebrow" style={{ color: 'var(--forest)' }}>Before safe intimacy</p>
-        <h2 className="display" style={{ fontSize: 28, marginTop: 6 }}>Only open this if you have choice, privacy, and permission to pause.</h2>
+        <p className="eyebrow" style={{ color: 'var(--forest)' }}>{t('consentGate.eyebrow')}</p>
+        <h2 className="display" style={{ fontSize: 28, marginTop: 6 }}>{t('consentGate.title')}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
-          This module is for consent, pacing, pause signals, and aftercare. It is not for graphic disclosure, pressure, persuasion, or proving anything to a partner.
+          {t('consentGate.body')}
         </p>
       </div>
       <div className="grid-3">
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(58, 107, 74, 0.35)' }} onClick={() => onContinue?.()}>
-          <p className="eyebrow" style={{ color: 'var(--forest)' }}>Consent-led</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Continue slowly</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>I can stop at any time and no one is demanding access to this screen.</p>
+          <p className="eyebrow" style={{ color: 'var(--forest)' }}>{t('consentGate.consentLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('consentGate.consentTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('consentGate.consentBody')}</p>
         </button>
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(179, 67, 56, 0.35)' }} onClick={() => { onUnsafe?.(); onOpenTool?.('danger'); }}>
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Not safe</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Do not continue</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>If someone is pressuring, watching, threatening, or blocking exit, use safety support first.</p>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('consentGate.unsafeLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('consentGate.unsafeTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('consentGate.unsafeBody')}</p>
         </button>
         <button className="card" style={{ textAlign: 'left', borderColor: 'rgba(192, 124, 42, 0.35)' }} onClick={() => onOpenTool?.('public')}>
-          <p className="eyebrow" style={{ color: 'var(--amber)' }}>Privacy</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Use public mode</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Switch to discreet grounding if this screen could be seen by someone unsafe.</p>
+          <p className="eyebrow" style={{ color: 'var(--amber)' }}>{t('consentGate.privacyLabel')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('consentGate.privacyTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('consentGate.privacyBody')}</p>
         </button>
       </div>
     </div>
@@ -2224,6 +2241,7 @@ function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tap
             ) : null)}
           </div>
           <h3 className="display" style={{ fontSize: 28, marginTop: 12 }}>{selected.trigger || selected.context || selected.category || selected.id}</h3>
+          <DiagnosisInfoLabel />
           {(selected.context || selected.environment || selected.domain) && (
             <p style={{ color: 'var(--ink-faint)', marginTop: 4 }}>{[selected.context || selected.environment, selected.domain, selected.subdomain].filter(Boolean).join(' · ')}</p>
           )}
@@ -2315,6 +2333,7 @@ function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tap
                 {item.category && <span className="chip chip-forest">{item.category}</span>}
               </div>
               <h3 className="display" style={{ fontSize: 19, marginTop: 10 }}>{item.trigger || item.context || item.id}</h3>
+              <DiagnosisInfoLabel />
               {item.shameSentence && <p style={{ color: 'var(--rose)', fontSize: 14, marginTop: 6, fontStyle: 'italic' }}>{item.shameSentence}</p>}
               <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginTop: 8 }}>
                 {item.script || item.grounding || item.action || item.repair || item.story || item.safeRouting || item.module}
@@ -2517,48 +2536,48 @@ function TriggerDetailOverlay({ item, onClose, readAloud }) {
 }
 
 function NotSafePanel({ onOpenTool, safetyLanguage = 'english', lowTextMode = false }) {
+  const t = window.useI18n();
   const [showOfflineCard, setShowOfflineCard] = useStateS(false);
-  const trustedMessage = 'I am not safe. I cannot explain right now. Please call me or help me reach a safer place.';
+  const trustedMessage = t('crisis.trustedMessage');
+  const offlineSteps = t('crisis.offlineSteps', { returnObjects: true });
   const copyTrustedMessage = async () => {
     const ok = await window.copyToClipboard(trustedMessage);
-    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: 'Safety message copied.' }));
+    if (ok) window.dispatchEvent(new CustomEvent('amanat:toast', { detail: t('crisis.copiedToast') }));
   };
 
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--rose-wash), var(--paper-bright))' }}>
-        <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Safety first</p>
-        <h2 className="display" style={{ fontSize: 30, marginTop: 6 }}>If you are not safe, do not analyse this yet.</h2>
+        <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('crisis.safetyFirst')}</p>
+        <h2 className="display" style={{ fontSize: 30, marginTop: 6 }}>{t('notSafe.title')}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
-          {lowTextMode ? 'First: contact, distance, light, and a real human.' : 'This path is for physical danger, coercion, self-harm risk, severe dissociation, or being trapped somewhere unsafe. The goal is contact, distance, light, and a real human.'}
+          {lowTextMode ? t('notSafe.lowTextBody') : t('notSafe.body')}
         </p>
         <div className="cluster" style={{ marginTop: 16 }}>
-          <button className="btn btn-crisis" onClick={() => onOpenTool('danger')}><window.Icon name="crisis" size={16} /> Open urgent safety flow</button>
-          <a className="btn btn-soft" href="tel:1122"><window.Icon name="phone" size={16} /> Call 1122</a>
-          <a className="btn btn-soft" href="tel:15"><window.Icon name="phone" size={16} /> Call 15</a>
-          <button className="btn btn-ghost" onClick={() => setShowOfflineCard(true)}>I still can't reach anyone</button>
+          <button className="btn btn-crisis" onClick={() => onOpenTool('danger')}><window.Icon name="crisis" size={16} /> {t('notSafe.openUrgentFlow')}</button>
+          <a className="btn btn-soft" href="tel:1122"><window.Icon name="phone" size={16} /> {t('notSafe.call1122')}</a>
+          <a className="btn btn-soft" href="tel:15"><window.Icon name="phone" size={16} /> {t('notSafe.call15')}</a>
+          <button className="btn btn-ghost" onClick={() => setShowOfflineCard(true)}>{t('crisis.stillCantReach')}</button>
         </div>
       </div>
 
       {showOfflineCard && (
         <div className="card-tactile" style={{ background: 'var(--paper-bright)' }}>
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>Offline safety card</p>
-          <h3 className="display" style={{ fontSize: 24, marginTop: 6 }}>Use only the next few minutes.</h3>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('crisis.offlineTitle')}</p>
+          <h3 className="display" style={{ fontSize: 24, marginTop: 6 }}>{t('notSafe.offlineSubtitle')}</h3>
           <ol style={{ paddingLeft: 22, margin: '12px 0 0', color: 'var(--ink-soft)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <li>Leave the room if you can. If leaving is not possible, lock the door or move closer to an exit, light, or another person.</li>
-            <li>Name 5 things you can see. Keep your eyes moving around the room.</li>
-            <li>Copy this message and text it to a trusted contact when you can.</li>
+            {(Array.isArray(offlineSteps) ? offlineSteps : []).map(step => <li key={step}>{step}</li>)}
           </ol>
           <div className="phrase-card" style={{ marginTop: 14 }}>
-            <div className="phrase-label safe">Message to copy</div>
+            <div className="phrase-label safe">{t('crisis.messageToCopy')}</div>
             <div className="phrase-text">"{trustedMessage}"</div>
           </div>
           <div className="cluster" style={{ marginTop: 14 }}>
             <button className="btn btn-forest btn-tiny" onClick={copyTrustedMessage}>
-              <window.Icon name="copy" size={14} /> Copy message
+              <window.Icon name="copy" size={14} /> {t('crisis.copyMessage')}
             </button>
             <a className="btn btn-soft btn-tiny" href={`sms:?&body=${encodeURIComponent(trustedMessage)}`}>
-              <window.Icon name="send" size={14} /> Open text
+              <window.Icon name="send" size={14} /> {t('crisis.openText')}
             </a>
           </div>
         </div>
@@ -2566,14 +2585,14 @@ function NotSafePanel({ onOpenTool, safetyLanguage = 'english', lowTextMode = fa
 
       <div className="grid-2">
         <div className="card">
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>1. Move toward safety</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>People, light, exit, lock, public place.</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>If you can move without increasing danger, move closer to another person, a lit area, a door, a lock, a shop, a neighbour, or the street.</p>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('notSafe.moveEyebrow')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('notSafe.moveTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('notSafe.moveBody')}</p>
         </div>
         <div className="card">
-          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>2. Stay connected</p>
-          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>Call or text one real person.</h3>
-          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>Use plain words: “{safetyPhrase(safetyLanguage, 'trusted')}” If calling is unsafe, send a short text or missed call signal.</p>
+          <p className="eyebrow" style={{ color: 'var(--crisis)' }}>{t('notSafe.connectEyebrow')}</p>
+          <h3 className="display" style={{ fontSize: 22, marginTop: 6 }}>{t('notSafe.connectTitle')}</h3>
+          <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>{t('notSafe.connectBody', { phrase: safetyPhrase(safetyLanguage, 'trusted') })}</p>
         </div>
         <div className="card">
           <p className="eyebrow" style={{ color: 'var(--crisis)' }}>3. Reduce immediate harm</p>
@@ -3372,6 +3391,7 @@ function Bullet({ color, title, children }) {
 }
 
 function ScriptsPanel({ store }) {
+  const t = window.useI18n();
   const saved = new Set(store.state.savedScripts);
   const onCopy = async (script) => {
     const ok = await window.copyToClipboard(script.text);
@@ -3397,7 +3417,7 @@ function ScriptsPanel({ store }) {
             <p className="display-italic" style={{ fontSize: 18, marginTop: 10, color: 'var(--ink)' }}>"{s.text}"</p>
             <div className="cluster" style={{ marginTop: 14 }}>
               <button className="btn btn-ghost btn-tiny" onClick={() => onCopy(s)}>
-                <window.Icon name="copy" size={14} /> {window.useI18n('en')('common.copy')}
+                <window.Icon name="copy" size={14} /> {t('common.copy')}
               </button>
               {saved.has(s.id) && <span className="chip chip-forest"><window.Icon name="check" size={12} /> Saved</span>}
             </div>

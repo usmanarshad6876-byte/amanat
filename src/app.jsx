@@ -18,6 +18,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "tapOnlyMode": false,
   "readAloud": false,
   "safetyLanguage": "english",
+  "language": "en",
   "showClinicalTerms": false,
   "disguiseMode": false,
   "accent": "#2f6f73",
@@ -89,12 +90,12 @@ function App() {
     const preset = ACCENT_PRESETS[tweaks.accent] || ACCENT_PRESETS['#2f6f73'];
     Object.entries(preset).forEach(([k, v]) => root.style.setProperty(k, v));
     root.style.setProperty('font-size', (16 * (tweaks.fontScale || 1)) + 'px');
-    root.setAttribute('dir', 'ltr');
+    window.setAmanatLanguage?.(tweaks.language || 'en');
     document.title = (tweaks.disguiseMode || tweaks.sharedDeviceMode) ? 'Notes' : 'Amanat — a private companion';
     // Density
     const dens = tweaks.density === 'compact' ? 0.85 : tweaks.density === 'comfy' ? 1.15 : 1;
     root.style.setProperty('--density', dens);
-  }, [tweaks.accent, tweaks.fontScale, tweaks.density, tweaks.disguiseMode, tweaks.sharedDeviceMode]);
+  }, [tweaks.accent, tweaks.fontScale, tweaks.density, tweaks.disguiseMode, tweaks.sharedDeviceMode, tweaks.language]);
 
   // Mood with message
   const onLogMood = (mood) => {
@@ -162,12 +163,12 @@ function App() {
       </window.Shell>
 
       {tweaks.showPanic && (
-        <button className="panic-btn" onClick={() => setModal('danger')} title="I am not safe" aria-label="I am not safe">
+        <button className="panic-btn" onClick={() => setModal('danger')} title={t('crisis.aria')} aria-label={t('crisis.aria')}>
           <window.Icon name="crisis" />
         </button>
       )}
-      <button className="quick-exit-btn" onClick={quickExit} title="Quick exit and clear local data" aria-label="Quick exit and clear local data">
-        Exit
+      <button className="quick-exit-btn" onClick={quickExit} title={t('quickExit.title')} aria-label={t('quickExit.aria')}>
+        {t('quickExit.label')}
       </button>
 
       {modal === 'breathing' && <window.Tools.BoxBreathing onClose={closeTool} />}
@@ -205,6 +206,12 @@ function App() {
         <window.TweakRadio label="Density" value={tweaks.density}
           options={['compact','regular','comfy']}
           onChange={v => setTweak('density', v)} />
+        <window.TweakRadio label={t('settings.language')} value={tweaks.language || 'en'}
+          options={[
+            { value: 'en', label: t('settings.english') },
+            { value: 'ur', label: t('settings.urdu') },
+          ]}
+          onChange={v => setTweak('language', v)} />
         <window.TweakSlider label="Text size" value={tweaks.fontScale} min={0.85} max={1.3} step={0.05} unit="\u00d7"
           onChange={v => setTweak('fontScale', v)} />
 
@@ -232,13 +239,13 @@ function App() {
         <window.TweakToggle label="Read aloud buttons" value={!!tweaks.readAloud}
           onChange={v => setTweak('readAloud', v)} />
         <window.TweakToggle
-          label="Show clinical terms"
+          label={t('settings.showClinicalTerms')}
           value={!!tweaks.showClinicalTerms}
           description="Uses workbook and clinical module names instead of plain-language titles."
           onChange={v => setTweak('showClinicalTerms', v)} />
         <window.TweakToggle label="Disguise as Notes" value={tweaks.disguiseMode}
           onChange={v => setTweak('disguiseMode', v)} />
-        <window.TweakButton label="Quick exit now" onClick={quickExit} />
+        <window.TweakButton label={t('settings.quickExitNow')} onClick={quickExit} />
         <window.TweakButton label="Erase everything" onClick={() => {
           if (confirm('Erase local moods, journal entries, saved scripts, and local chat history from this browser? This cannot erase any text already processed by an AI service.')) store.wipeAll();
         }} />

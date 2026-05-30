@@ -1,0 +1,144 @@
+{
+  "brandName": "Amanat",
+  "brandTagline": "a private companion",
+  "nav": {
+    "home": "Home",
+    "tools": "Tools",
+    "journal": "Journal",
+    "companion": "Companion",
+    "partners": "Partners",
+    "help": "Help"
+  },
+  "home": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "greetingNight": "You are here",
+    "subtitle": "You are not too much. You are not the problem.",
+    "startCheckIn": "Start a check-in",
+    "browseTools": "Browse tools",
+    "quickAffirm": "A true sentence",
+    "recentMood": "Recent mood",
+    "panicLabel": "I need help now"
+  },
+  "tools": {
+    "breathing": "Box breathing",
+    "breathingDesc": "A 4-4-4-4 breathing cycle, with orienting if breath feels hard.",
+    "grounding": "5-4-3-2-1 grounding",
+    "groundingDesc": "Use your senses to notice the room you are in.",
+    "publicMode": "30-second grounding",
+    "publicModeDesc": "A discreet public-place reset for work, class, or family rooms.",
+    "reframe": "Reframe a thought",
+    "reframeDesc": "Translate a painful thought into a steadier one.",
+    "journal": "Safe journal",
+    "journalDesc": "Write privately in this browser unless you choose to share or export.",
+    "mood": "Mood log",
+    "moodDesc": "Notice state changes without turning them into verdicts.",
+    "affirm": "Affirmations",
+    "affirmDesc": "A small sentence that can hold you for today.",
+    "checkIn": "Check-in",
+    "checkInDesc": "Three gentle questions and one next step."
+  },
+  "common": {
+    "close": "Close",
+    "next": "Next",
+    "back": "Back",
+    "forward": "Forward",
+    "done": "Done",
+    "copy": "Copy",
+    "save": "Save",
+    "delete": "Delete",
+    "clear": "Clear"
+  },
+  "settings": {
+    "language": "Language",
+    "english": "English",
+    "urdu": "اردو",
+    "showClinicalTerms": "Show clinical terms",
+    "quickExitNow": "Quick exit now"
+  },
+  "quickExit": {
+    "label": "Exit",
+    "title": "Quick exit and clear local data",
+    "aria": "Quick exit and clear local data"
+  },
+  "safetyGate": {
+    "beforeOpening": "Before opening {{moduleTitle}}",
+    "fallbackModule": "this module",
+    "title": "Check your safety level first.",
+    "body": "This keeps the app from asking for reflection when your body may need help, grounding, or distance.",
+    "redLabel": "Red",
+    "redTitle": "Not safe now",
+    "redBody": "Danger, self-harm risk, coercion, severe dissociation, or trapped environment.",
+    "amberLabel": "Amber",
+    "amberTitle": "Flooded but safe enough",
+    "amberBody": "Open the module, but begin with the grounding step. No big decisions.",
+    "greenLabel": "Green",
+    "greenTitle": "Safe enough to reflect",
+    "greenBody": "Continue to the selected card, script, and optional explanation.",
+    "groundFirst": "Ground first",
+    "publicMode": "Public mode"
+  },
+  "consentGate": {
+    "eyebrow": "Before safe intimacy",
+    "title": "Only open this if you have choice, privacy, and permission to pause.",
+    "body": "This module is for consent, pacing, pause signals, and aftercare. It is not for graphic disclosure, pressure, persuasion, or proving anything to a partner.",
+    "consentLabel": "Consent-led",
+    "consentTitle": "Continue slowly",
+    "consentBody": "I can stop at any time and no one is demanding access to this screen.",
+    "unsafeLabel": "Not safe",
+    "unsafeTitle": "Do not continue",
+    "unsafeBody": "If someone is pressuring, watching, threatening, or blocking exit, use safety support first.",
+    "privacyLabel": "Privacy",
+    "privacyTitle": "Use public mode",
+    "privacyBody": "Switch to discreet grounding if this screen could be seen by someone unsafe."
+  },
+  "crisis": {
+    "aria": "I am not safe",
+    "eyebrow": "Right now",
+    "title": "I am not safe.",
+    "safetyFirst": "Safety first",
+    "body": "This is for physical danger, coercion, severe dissociation, or risk of self-harm. Do not use calming tools instead of getting away, calling someone, or reaching emergency help.",
+    "steps": [
+      "Move toward people, light, an exit, a lock, or a public place if you can.",
+      "Keep your phone with you. Avoid arguing through a door or in a closed room.",
+      "If you may hurt yourself, move away from blades, pills, cords, weapons, or heights.",
+      "Call one real person now. Stay connected until the danger has passed."
+    ],
+    "stillCantReach": "I still can't reach anyone",
+    "offlineTitle": "Offline safety card",
+    "offlineSteps": [
+      "Leave the room if you can. If leaving is not possible, lock the door or move closer to an exit, light, or another person.",
+      "Name 5 things you can see. Keep your eyes moving around the room.",
+      "Copy this message and text it to a trusted contact when you can."
+    ],
+    "messageToCopy": "Message to copy",
+    "trustedMessage": "I am not safe. I cannot explain right now. Please call me or help me reach a safer place.",
+    "copyMessage": "Copy message",
+    "openText": "Open text",
+    "neutralScreen": "If you need the screen to look neutral",
+    "openPublicMode": "Open public-place mode",
+    "openCompanion": "Open companion after contacting a person",
+    "copiedToast": "Safety message copied."
+  },
+  "notSafe": {
+    "title": "If you are not safe, do not analyse this yet.",
+    "body": "This path is for physical danger, coercion, self-harm risk, severe dissociation, or being trapped somewhere unsafe. The goal is contact, distance, light, and a real human.",
+    "lowTextBody": "First: contact, distance, light, and a real human.",
+    "openUrgentFlow": "Open urgent safety flow",
+    "call1122": "Call 1122",
+    "call15": "Call 15",
+    "offlineSubtitle": "Use only the next few minutes.",
+    "moveTitle": "People, light, exit, lock, public place.",
+    "moveBody": "If you can move without increasing danger, move closer to another person, a lit area, a door, a lock, a shop, a neighbour, or the street.",
+    "connectTitle": "Call or text one real person.",
+    "connectBody": "Use plain words: “{{phrase}}” If calling is unsafe, send a short text or missed call signal.",
+    "moveEyebrow": "1. Move toward safety",
+    "connectEyebrow": "2. Stay connected"
+  },
+  "diagnosis": {
+    "infoLabel": "This is information, not a diagnosis.",
+    "panelTitle": "Not a diagnosis",
+    "panelBody": "These profiles describe protective patterns that can shift by context. Use them for self-understanding, not for diagnosing yourself or labelling someone else."
+  }
+}
