@@ -18,6 +18,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "tapOnlyMode": false,
   "readAloud": false,
   "safetyLanguage": "english",
+  "showClinicalTerms": false,
   "disguiseMode": false,
   "accent": "#2f6f73",
   "fontScale": 1
@@ -134,6 +135,7 @@ function App() {
       readAloud={!!tweaks.readAloud}
       safetyLanguage={tweaks.safetyLanguage || 'english'}
       userRole={tweaks.userRole || 'survivor'}
+      showClinicalTerms={!!tweaks.showClinicalTerms}
     />;
   } else if (route.name === 'journal') {
     screen = <window.Screens.JournalScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} safetyLanguage={tweaks.safetyLanguage || 'english'} />;
@@ -154,7 +156,7 @@ function App() {
         canGoForward={navState.index < navState.entries.length - 1}
         onBack={goBack}
         onForward={goForward}
-        onOpenSettings={() => {/* tweaks panel is always visible */}}
+        onOpenSettings={() => window.postMessage({ type: '__activate_edit_mode' }, '*')}
       >
         {screen}
       </window.Shell>
@@ -229,6 +231,11 @@ function App() {
           onChange={v => setTweak('tapOnlyMode', v)} />
         <window.TweakToggle label="Read aloud buttons" value={!!tweaks.readAloud}
           onChange={v => setTweak('readAloud', v)} />
+        <window.TweakToggle
+          label="Show clinical terms"
+          value={!!tweaks.showClinicalTerms}
+          description="Uses workbook and clinical module names instead of plain-language titles."
+          onChange={v => setTweak('showClinicalTerms', v)} />
         <window.TweakToggle label="Disguise as Notes" value={tweaks.disguiseMode}
           onChange={v => setTweak('disguiseMode', v)} />
         <window.TweakButton label="Quick exit now" onClick={quickExit} />

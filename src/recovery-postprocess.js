@@ -13,6 +13,43 @@ const MODULE_VISIBILITY = {
   workplace: 'Survivor-facing',
 };
 
+const MODULE_PLAIN_TITLES = {
+  survivorCards: 'Understanding what happened to me',
+  shameSpiral: 'Why I feel so bad about myself',
+  responseProfiles: 'How my body learned to protect me',
+  languageGuide: 'Words that feel safer',
+  mindLoops: 'Thoughts that go in circles',
+  angerGrief: 'Making room for anger and grief safely',
+  roughDay: 'What to do on a very hard day',
+  night: 'A plan for when night feels hard',
+  goodDay: 'Letting good things feel safer',
+  environmentSafety: 'Making my space feel safer',
+  culture: 'Family, faith, and pressure',
+  relationships: 'What happens between me and other people',
+  intimacy: 'Closeness with choice and pause',
+  workplace: 'Getting through work pressure',
+  research: 'Research notes and codebook',
+};
+
+const MODULE_CLINICAL_TITLES = {
+  survivorCards: 'Psychoeducation',
+  shameSpiral: 'Shame Spiral Map',
+  responseProfiles: 'Trauma Response Profile',
+  languageGuide: 'Trauma-Informed Language Guide',
+  mindLoops: 'Metacognitive Mind Loops',
+};
+
+function ensureMetaTitle(target, key) {
+  if (!target) return;
+  target.meta = target.meta || {};
+  target.meta.title = target.meta.title || MODULE_CLINICAL_TITLES[key] || target.meta.title;
+  target.meta.plainTitle = target.meta.plainTitle || MODULE_PLAIN_TITLES[key] || target.meta.title;
+}
+
+ensureMetaTitle(window.AMANAT_SURVIVOR_CARDS, 'survivorCards');
+ensureMetaTitle(window.AMANAT_SHAME_SPIRAL_CARDS, 'shameSpiral');
+ensureMetaTitle(window.AMANAT_RESPONSE_PROFILE_CARDS, 'responseProfiles');
+
 function normalizeRisk(value) {
   const text = String(value || '').toLowerCase();
   if (text.includes('high') || text.includes('red') || text.includes('urgent')) return 'red';
@@ -43,6 +80,8 @@ function isFormulaBlankRow(row) {
 }
 
 Object.entries(window.AMANAT_RECOVERY_MODULES || {}).forEach(([moduleKey, module]) => {
+  ensureMetaTitle(module, moduleKey);
+
   Object.entries(module.support || {}).forEach(([sheetName, rows]) => {
     if (Array.isArray(rows)) module.support[sheetName] = rows.filter(row => !isFormulaBlankRow(row));
   });

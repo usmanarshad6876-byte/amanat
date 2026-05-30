@@ -540,7 +540,7 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 // ────────────────────────────────────────────────────────────────────────────
 // TOOLS screen — full surface for breathing/grounding/reframe + mood + affirmations
 // ────────────────────────────────────────────────────────────────────────────
-function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCompanion, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor' }) {
+function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCompanion, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor', showClinicalTerms = false }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
   const [cultureAnchor, setCultureAnchor] = useStateS(null);
@@ -737,11 +737,11 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
       {!showSurvivorFirstVisit && tab === 'modes' && <ModesPanel onOpenTool={onOpenTool} />}
       {!showSurvivorFirstVisit && tab === 'mood' && <MoodPanel store={store} onLogMood={onLogMood} />}
       {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} onOpenCompanion={onOpenCompanion} />}
-      {!showSurvivorFirstVisit && tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {!showSurvivorFirstVisit && tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
+      {!showSurvivorFirstVisit && tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
+      {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
       {!showSurvivorFirstVisit && tab === 'boundaries' && <BoundaryScriptsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {!showSurvivorFirstVisit && tab === 'anger' && <ModuleLibraryPanel moduleKey="angerGrief" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'anger' && <ModuleLibraryPanel moduleKey="angerGrief" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
       {!showSurvivorFirstVisit && tab === 'roughday' && (
         <RoughDayGuidedPanel
           onOpenTool={onOpenTool}
@@ -750,18 +750,18 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
           setShowRoughDayLibrary={setShowRoughDayLibrary}
         />
       )}
-      {!showSurvivorFirstVisit && tab === 'roughday' && showRoughDayLibrary && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
-      {!showSurvivorFirstVisit && tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" anchor={cultureAnchor} lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'relationships' && <ModuleLibraryPanel moduleKey="relationships" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'intimacy' && <ModuleLibraryPanel moduleKey="intimacy" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && tab === 'workplace' && <ModuleLibraryPanel moduleKey="workplace" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
-      {!showSurvivorFirstVisit && showResearch && tab === 'research' && <ResearchWorkspacePanel lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
+      {!showSurvivorFirstVisit && tab === 'roughday' && showRoughDayLibrary && <div style={{ marginTop: 18 }}><ModuleLibraryPanel moduleKey="roughDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} /></div>}
+      {!showSurvivorFirstVisit && tab === 'night' && <ModuleLibraryPanel moduleKey="night" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'goodday' && <ModuleLibraryPanel moduleKey="goodDay" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'environment' && <ModuleLibraryPanel moduleKey="environmentSafety" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'culture' && <ModuleLibraryPanel moduleKey="culture" anchor={cultureAnchor} lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'relationships' && <ModuleLibraryPanel moduleKey="relationships" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'intimacy' && <ModuleLibraryPanel moduleKey="intimacy" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && tab === 'workplace' && <ModuleLibraryPanel moduleKey="workplace" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists={showBrowseLists} userRole={userRole} showClinicalTerms={showClinicalTerms} onOpenTool={onOpenTool} onUnsafe={() => setTab('unsafe')} />}
+      {!showSurvivorFirstVisit && showResearch && tab === 'research' && <ResearchWorkspacePanel lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
       {!showSurvivorFirstVisit && tab === 'triggers' && <TriggerLibraryPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} />}
-      {!showSurvivorFirstVisit && tab === 'language' && <LanguagePanel data={window.AMANAT_CONTENT.languageGuide} eyebrowText="Old alarm says" eyebrowSafe="Steadiness says" intro="These shifts are not corrections to force on anyone. They are gentler alternatives, when the nervous system is ready for one." />}
-      {!showSurvivorFirstVisit && tab === 'loops' && <LanguagePanel data={window.AMANAT_CONTENT.mindLoops} eyebrowText="Loop says" eyebrowSafe="Grounding says" intro="These patterns are about what the mind has learned to believe about thinking, remembering, scanning, feeling, and healing." />}
+      {!showSurvivorFirstVisit && tab === 'language' && <LanguagePanel title="Trauma-Informed Language Guide" plainTitle="Words that feel safer" userRole={userRole} showClinicalTerms={showClinicalTerms} data={window.AMANAT_CONTENT.languageGuide} eyebrowText="Old alarm says" eyebrowSafe="Steadiness says" intro="These shifts are not corrections to force on anyone. They are gentler alternatives, when the nervous system is ready for one." />}
+      {!showSurvivorFirstVisit && tab === 'loops' && <LanguagePanel title="Metacognitive Mind Loops" plainTitle="Thoughts that go in circles" userRole={userRole} showClinicalTerms={showClinicalTerms} data={window.AMANAT_CONTENT.mindLoops} eyebrowText="Loop says" eyebrowSafe="Grounding says" intro="These patterns are about what the mind has learned to believe about thinking, remembering, scanning, feeling, and healing." />}
       {!showSurvivorFirstVisit && tab === 'affirm' && <AffirmPanel store={store} />}
       {partnerTranslationTab && <PartnerTranslationModal tab={partnerTranslationTab} onClose={() => setPartnerTranslationTab(null)} />}
     </div>
@@ -1029,8 +1029,13 @@ function WhatNowPanel({ onSelectTab, onOpenTool }) {
   );
 }
 
-function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false }) {
+function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false, userRole = 'survivor', showClinicalTerms = false }) {
   const deck = window.AMANAT_SURVIVOR_CARDS || { meta: {}, cards: [] };
+  const panelTitle = displayModuleTitle(
+    { title: deck.meta.title || 'Psychoeducation', plainTitle: deck.meta.plainTitle || 'Understanding what happened to me' },
+    userRole,
+    showClinicalTerms
+  );
   const cards = deck.cards || [];
   const [query, setQuery] = useStateS('');
   const [risk, setRisk] = useStateS('all');
@@ -1074,7 +1079,7 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
     <div className="stack reveal">
       <div className="card-tactile">
         <p className="eyebrow">Survivor-facing cards</p>
-        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>Draw a card for what is happening now.</h2>
+        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{panelTitle}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
           {deck.meta.totalCards || cards.length} cards imported from the Humsafar survivor-facing workbook. Use them for regulation before reflection.
         </p>
@@ -1171,8 +1176,13 @@ function SurvivorCardsPanel({ showBrowseLists = true, tapOnlyMode = false, readA
   );
 }
 
-function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false }) {
+function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false, userRole = 'survivor', showClinicalTerms = false }) {
   const deck = window.AMANAT_SHAME_SPIRAL_CARDS || { meta: {}, cards: [] };
+  const panelTitle = displayModuleTitle(
+    { title: deck.meta.title || 'Shame Spiral Map', plainTitle: deck.meta.plainTitle || 'Why I feel so bad about myself' },
+    userRole,
+    showClinicalTerms
+  );
   const cards = deck.cards || [];
   const [query, setQuery] = useStateS('');
   const [risk, setRisk] = useStateS('all');
@@ -1214,8 +1224,8 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--rose-wash), var(--paper-raised))' }}>
-        <p className="eyebrow" style={{ color: 'var(--rose)' }}>Shame spiral map</p>
-        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>Map the shame sentence without obeying it.</h2>
+        <p className="eyebrow" style={{ color: 'var(--rose)' }}>{shouldShowClinicalTerms(userRole, showClinicalTerms) ? 'Shame spiral map' : 'Shame and self-blame'}</p>
+        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{panelTitle}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
           {deck.meta.totalCards || cards.length} shame spiral cards imported from the workbook. Read one card at a time: body first, repair before analysis.
         </p>
@@ -1323,8 +1333,13 @@ function ShameSpiralPanel({ showBrowseLists = true, tapOnlyMode = false, readAlo
   );
 }
 
-function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false }) {
+function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, readAloud = false, userRole = 'survivor', showClinicalTerms = false }) {
   const deck = window.AMANAT_RESPONSE_PROFILE_CARDS || { meta: {}, cards: [] };
+  const panelTitle = displayModuleTitle(
+    { title: deck.meta.title || 'Trauma Response Profile', plainTitle: deck.meta.plainTitle || 'How my body learned to protect me' },
+    userRole,
+    showClinicalTerms
+  );
   const cards = deck.cards || [];
   const [query, setQuery] = useStateS('');
   const [profile, setProfile] = useStateS('all');
@@ -1366,8 +1381,8 @@ function ResponseProfilesPanel({ showBrowseLists = true, tapOnlyMode = false, re
   return (
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--forest-wash), var(--paper-raised))' }}>
-        <p className="eyebrow" style={{ color: 'var(--forest)' }}>Body response maps</p>
-        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>What is this response trying to protect?</h2>
+        <p className="eyebrow" style={{ color: 'var(--forest)' }}>{shouldShowClinicalTerms(userRole, showClinicalTerms) ? 'Trauma response profile' : 'Body protection patterns'}</p>
+        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{panelTitle}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
           {deck.meta.totalCards || cards.length} body response cards imported from the workbook. These are reflection maps, not diagnoses.
         </p>
@@ -1674,10 +1689,19 @@ function chipTone(value, field) {
   return 'amber';
 }
 
+function shouldShowClinicalTerms(userRole = 'survivor', showClinicalTerms = false) {
+  return !!showClinicalTerms || userRole === 'clinician' || userRole === 'researcher';
+}
+
+function displayModuleTitle({ title, plainTitle }, userRole, showClinicalTerms) {
+  return shouldShowClinicalTerms(userRole, showClinicalTerms) ? title : (plainTitle || title);
+}
+
 const RECOVERY_MODULE_CONFIGS = {
   angerGrief: {
     eyebrow: 'Anger and grief',
     title: 'Safe anger, honest grief, and repair.',
+    plainTitle: 'Making room for anger and grief safely',
     intro: 'Permission statements, grounding actions, grief practices, and repair steps from the anger and grief workbook.',
     drawLabel: 'Draw a map',
     placeholder: 'Search anger, grief, script, body signal...',
@@ -1697,6 +1721,7 @@ const RECOVERY_MODULE_CONFIGS = {
   roughDay: {
     eyebrow: 'Rough-day plan',
     title: 'Safe-enough, flooded, and urgent steps for hard days.',
+    plainTitle: 'What to do on a very hard day',
     intro: 'A return-to-safety plan for early warning signs, immediate actions, and next-day repair.',
     drawLabel: 'Draw a rough-day card',
     placeholder: 'Search warning signs, plans, scripts...',
@@ -1716,6 +1741,7 @@ const RECOVERY_MODULE_CONFIGS = {
   night: {
     eyebrow: 'Sleep and night-time',
     title: 'A plan for when night makes the nervous system louder.',
+    plainTitle: 'A plan for when night feels hard',
     intro: 'Before-bed, during-night, nightmare, and morning repair steps from the night-time plan.',
     drawLabel: 'Draw a night card',
     placeholder: 'Search sleep cue, nightmare, body signal...',
@@ -1735,6 +1761,7 @@ const RECOVERY_MODULE_CONFIGS = {
   goodDay: {
     eyebrow: 'Good-day safety',
     title: 'Let good things arrive slowly enough to feel real.',
+    plainTitle: 'Letting good things feel safer',
     intro: 'Joy tolerance, regulation, and self-scripts for days when calm or ease feels unfamiliar.',
     drawLabel: 'Draw a good-day card',
     placeholder: 'Search good cue, old threat, self-script...',
@@ -1753,6 +1780,7 @@ const RECOVERY_MODULE_CONFIGS = {
   environmentSafety: {
     eyebrow: 'Environment safety',
     title: 'Check places, cues, exits, and safer setup.',
+    plainTitle: 'Making my space feel safer',
     intro: 'Environmental safety maps for privacy risk, exposure risk, grounding, boundaries, and safer setup.',
     drawLabel: 'Draw an environment',
     placeholder: 'Search place, cue, exit, redesign...',
@@ -1772,6 +1800,7 @@ const RECOVERY_MODULE_CONFIGS = {
   culture: {
     eyebrow: 'Family culture layer',
     title: 'Family pressure, faith-sensitive reframes, and safe routing.',
+    plainTitle: 'Family, faith, and pressure',
     intro: 'Pakistani family-system scripts and culture-aware safety steps. Use as options, not instructions.',
     drawLabel: 'Draw a culture card',
     placeholder: 'Search family cue, faith reframe, safe routing...',
@@ -1791,6 +1820,7 @@ const RECOVERY_MODULE_CONFIGS = {
   relationships: {
     eyebrow: 'Relationship maps',
     title: 'Misreads, needs, boundaries, and repair.',
+    plainTitle: 'What happens between me and other people',
     intro: 'Relationship-specific maps for attachment wounds, relational triggers, safe responses, and repair scripts.',
     drawLabel: 'Draw a relationship map',
     placeholder: 'Search attachment, need, repair, response...',
@@ -1810,6 +1840,7 @@ const RECOVERY_MODULE_CONFIGS = {
   intimacy: {
     eyebrow: 'Safe intimacy',
     title: 'Consent, pace, pause, and aftercare.',
+    plainTitle: 'Closeness with choice and pause',
     intro: 'A gentle map for closeness, touch cues, boundaries, partner responses, and repair.',
     drawLabel: 'Draw an intimacy map',
     placeholder: 'Search consent, touch, pause, aftercare...',
@@ -1829,6 +1860,7 @@ const RECOVERY_MODULE_CONFIGS = {
   workplace: {
     eyebrow: 'Workplace trauma',
     title: 'Discreet grounding and work-safe words.',
+    plainTitle: 'Getting through work pressure',
     intro: 'Workplace maps for authority cues, affected tasks, impacts, scripts, and reasonable adjustment ideas.',
     drawLabel: 'Draw a work map',
     placeholder: 'Search workplace scenario, task, script...',
@@ -1848,6 +1880,7 @@ const RECOVERY_MODULE_CONFIGS = {
   research: {
     eyebrow: 'Research dashboard',
     title: 'Codebook, variables, and capture references.',
+    plainTitle: 'Research notes and codebook',
     intro: 'Research-facing material from the dashboard workbook. This is a reference area, not a survivor care flow.',
     drawLabel: 'Draw a codebook row',
     placeholder: 'Search codebook, variable, domain, routing...',
@@ -1963,7 +1996,7 @@ const PUBLIC_PATHWAY_RULES = [
   ['Research prototype', 'Anonymous coded data only, consent before capture, no clinical claims, no publication as a validated intervention.'],
 ];
 
-function ResearchWorkspacePanel({ lowTextMode = false, tapOnlyMode = false, readAloud = false }) {
+function ResearchWorkspacePanel({ lowTextMode = false, tapOnlyMode = false, readAloud = false, userRole = 'researcher', showClinicalTerms = false }) {
   const [ack, setAck] = useStateS(false);
 
   if (!ack) {
@@ -1989,7 +2022,7 @@ function ResearchWorkspacePanel({ lowTextMode = false, tapOnlyMode = false, read
     <div className="stack reveal">
       <ResearchReadinessPanel compact />
       <ResearchSchemaPanel compact />
-      <ModuleLibraryPanel moduleKey="research" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists />
+      <ModuleLibraryPanel moduleKey="research" lowTextMode={lowTextMode} tapOnlyMode={tapOnlyMode} readAloud={readAloud} showBrowseLists userRole={userRole} showClinicalTerms={showClinicalTerms} />
     </div>
   );
 }
@@ -2053,9 +2086,17 @@ function PublicPathwayPanel() {
   );
 }
 
-function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tapOnlyMode = false, readAloud = false, showBrowseLists = true, onOpenTool, onUnsafe }) {
+function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tapOnlyMode = false, readAloud = false, showBrowseLists = true, userRole = 'survivor', showClinicalTerms = false, onOpenTool, onUnsafe }) {
   const moduleData = window.AMANAT_RECOVERY_MODULES?.[moduleKey] || { meta: {}, items: [], support: {} };
   const config = RECOVERY_MODULE_CONFIGS[moduleKey] || {};
+  const moduleTitle = displayModuleTitle(
+    {
+      title: config.title || moduleData.meta.title || moduleKey,
+      plainTitle: config.plainTitle || moduleData.meta.plainTitle,
+    },
+    userRole,
+    showClinicalTerms
+  );
   const items = moduleData.items || [];
   const familyAnchorRef = useRefS(null);
   const faithAnchorRef = useRefS(null);
@@ -2121,7 +2162,7 @@ function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tap
   };
 
   if (!safetyGate && moduleKey !== 'research') {
-    return <SafetyGatePanel moduleTitle={config.eyebrow || moduleData.meta.title} onContinue={setSafetyGate} onUnsafe={onUnsafe} onOpenTool={onOpenTool} />;
+    return <SafetyGatePanel moduleTitle={moduleTitle} onContinue={setSafetyGate} onUnsafe={onUnsafe} onOpenTool={onOpenTool} />;
   }
 
   if (moduleKey === 'intimacy' && !consentGate) {
@@ -2132,7 +2173,7 @@ function ModuleLibraryPanel({ moduleKey, anchor = null, lowTextMode = false, tap
     <div className="stack reveal">
       <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--forest-wash), var(--paper-raised))' }}>
         <p className="eyebrow" style={{ color: 'var(--forest)' }}>{config.eyebrow || moduleData.meta.title}</p>
-        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{config.title || moduleData.meta.title}</h2>
+        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{moduleTitle}</h2>
         <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
           {lowTextMode ? 'Start with one body step. Details are optional.' : `${config.intro} ${moduleData.meta.totalItems || items.length} primary rows imported.`}
         </p>
@@ -2920,10 +2961,15 @@ function MoodSparkline({ log }) {
   );
 }
 
-function LanguagePanel({ data, eyebrowText, eyebrowSafe, intro }) {
+function LanguagePanel({ data, eyebrowText, eyebrowSafe, intro, title, plainTitle, userRole = 'survivor', showClinicalTerms = false }) {
+  const panelTitle = displayModuleTitle({ title, plainTitle }, userRole, showClinicalTerms);
   return (
     <div className="stack reveal">
-      <p style={{ color: 'var(--ink-soft)', maxWidth: '60ch' }}>{intro}</p>
+      <div className="card-tactile" style={{ background: 'linear-gradient(135deg, var(--forest-wash), var(--paper-raised))' }}>
+        <p className="eyebrow" style={{ color: 'var(--forest)' }}>{shouldShowClinicalTerms(userRole, showClinicalTerms) ? title : 'Plain words'}</p>
+        <h2 className="display" style={{ fontSize: 26, marginTop: 6 }}>{panelTitle}</h2>
+        <p style={{ color: 'var(--ink-soft)', marginTop: 8, maxWidth: '60ch' }}>{intro}</p>
+      </div>
       <div className="grid-2" style={{ marginTop: 6 }}>
         {data.map(d => (
           <div key={d.id} className="phrase-card">
