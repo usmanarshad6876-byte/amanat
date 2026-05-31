@@ -362,7 +362,7 @@ function Reframe({ onSave, lastReframes = [], onOpenCompanion }) {
         {showActivationNote && (
           <div className="card-sunk" style={{ background: 'var(--amber-wash)', marginTop: 10, display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>
-              Writing the thought can feel activating. If it does, close this and open Companion or box breathing instead.
+              Writing the thought can feel activating. If it does, close this and open box breathing instead.
             </p>
             <button className="icon-btn" onClick={() => { REFRAME_CAUTION_DISMISSED.current = true; setShowActivationNote(false); }} aria-label="Hide writing caution" title="Hide">
               <window.Icon name="close" size={14} />
@@ -382,9 +382,11 @@ function Reframe({ onSave, lastReframes = [], onOpenCompanion }) {
             {input.length}/500 · uses a model if available; otherwise reframes locally
           </span>
           <div className="cluster" style={{ justifyContent: 'flex-end', gap: 8 }}>
-            <button className="btn btn-ghost btn-tiny" onClick={onOpenCompanion}>
-              Too activating to write? Try Companion instead
-            </button>
+            {onOpenCompanion && (
+              <button className="btn btn-ghost btn-tiny" onClick={onOpenCompanion}>
+                Too activating to write? Try Companion instead
+              </button>
+            )}
             <button className="btn btn-forest" onClick={run} disabled={!input.trim() || loading}>
               {loading ? 'Listening...' : 'Reframe gently'} <window.Icon name="arrowRight" size={16} />
             </button>
@@ -426,7 +428,7 @@ function Reframe({ onSave, lastReframes = [], onOpenCompanion }) {
 // ────────────────────────────────────────────────────────────────────────────
 // Guided check-in (mood → body → what's up → suggested tool)
 // ────────────────────────────────────────────────────────────────────────────
-function CheckIn({ onClose, onLogMood, onNavigate }) {
+function CheckIn({ onClose, onLogMood, onNavigate, companionEnabled = false }) {
   const [step, setStep] = useStateT(0);
   const [mood, setMood] = useStateT(null);
   const [bodyParts, setBodyParts] = useStateT([]);
@@ -443,14 +445,18 @@ function CheckIn({ onClose, onLogMood, onNavigate }) {
     if (!mood) return null;
     if ((mood.key === 'numb' || mood.key === 'flat') && bodyParts.length === 0) return { id: 'affirm', title: 'Read safe sentences', detail: 'No effort needed. Just words that do not demand.' };
     if ((whatsUp === 'flashback' || whatsUp === 'memory')) return { id: 'grounding', title: 'Run 5-4-3-2-1', detail: 'Memory recall needs present-moment anchors first.' };
-    if (whatsUp === 'alone' || whatsUp === 'night') return { id: 'companion', title: 'Sit with Companion', detail: 'Night loneliness does not need analysis. Just presence.' };
+    if (whatsUp === 'alone' || whatsUp === 'night') return companionEnabled
+      ? { id: 'companion', title: 'Sit with Companion', detail: 'Night loneliness does not need analysis. Just presence.' }
+      : { id: 'grounding', title: 'Try a quiet grounding step', detail: 'Night loneliness does not need analysis. Start with one ordinary thing in the room.' };
     if ((bodyParts.includes('jaw') || bodyParts.includes('shoulders')) && mood.key !== 'low') return { id: 'breathing', title: 'Try box breathing', detail: 'Jaw and shoulders carry tension before thoughts do.' };
-    if (mood.key === 'low' || mood.key === 'flat') return { id: 'companion', title: 'Talk it through with Companion', detail: 'No advice. Just presence.' };
+    if (mood.key === 'low' || mood.key === 'flat') return companionEnabled
+      ? { id: 'companion', title: 'Talk it through with Companion', detail: 'No advice. Just presence.' }
+      : { id: 'affirm', title: 'Read safe sentences', detail: 'No advice. Just a few words that do not demand.' };
     if (bodyParts.includes('chest') || bodyParts.includes('throat')) return { id: 'breathing', title: 'Try box breathing', detail: 'Slows the chest. 4-4-4-4 for four rounds.' };
     if (bodyParts.includes('head') || whatsUp === 'flashback') return { id: 'grounding', title: 'Run 5-4-3-2-1', detail: 'Bring the senses back into the actual room.' };
     if (whatsUp === 'someone-said' || whatsUp === 'argument') return { id: 'reframe', title: 'Reframe the sentence', detail: 'Try writing what stuck. Safety can also answer.' };
     return { id: 'journal', title: 'Open the journal', detail: 'Some things just need a private page first.' };
-  }, [mood, bodyParts, whatsUp]);
+  }, [mood, bodyParts, whatsUp, companionEnabled]);
 
   const totalSteps = 4;
   const STEP_TITLES = ['How are you arriving?', 'Where in the body?', 'What\u2019s up, if anything?', 'A suggestion'];
@@ -632,7 +638,7 @@ function DangerNow({ onClose, onOpenPublic, onOpenCompanion }) {
           <p className="eyebrow" style={{ marginBottom: 8 }}>{t('crisis.neutralScreen')}</p>
           <div className="stack">
             <button className="btn btn-ghost btn-block" onClick={onOpenPublic}><window.Icon name="shield" size={16} /> {t('crisis.openPublicMode')}</button>
-            <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> {t('crisis.openCompanion')}</button>
+            {onOpenCompanion && <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> {t('crisis.openCompanion')}</button>}
           </div>
         </div>
       </div>
@@ -661,7 +667,7 @@ function Panic({ onClose, onOpenBreathing, onOpenGrounding, onOpenCompanion }) {
           <div className="stack">
             <button className="btn btn-ghost btn-block" onClick={onOpenBreathing}><window.Icon name="breathing" size={16} /> Breathe if that feels okay</button>
             <button className="btn btn-ghost btn-block" onClick={onOpenGrounding}><window.Icon name="grounding" size={16} /> Run 5-4-3-2-1</button>
-            <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> Talk to companion</button>
+            {onOpenCompanion && <button className="btn btn-ghost btn-block" onClick={onOpenCompanion}><window.Icon name="companion" size={16} /> Talk to companion</button>}
           </div>
         </div>
       </div>

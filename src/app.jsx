@@ -35,6 +35,8 @@ const ACCENT_PRESETS = {
 function App() {
   const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
   const persistLocal = !!tweaks.persistLocal;
+  // Companion stays private unless the host explicitly enables the admin-only preview before bootstrap.
+  const companionAdminEnabled = window.AMANAT_ADMIN === true;
   const store = window.useAppStore(persistLocal);
   const t = window.useI18n();
   const displayT = useCallbackA((path) => {
@@ -52,14 +54,14 @@ function App() {
   });
   const route = navState.entries[navState.index] || { name: 'home', params: {} };
   const navigate = useCallbackA((name, params = {}) => {
-    const next = { name, params };
+    const next = { name: name === 'companion' && !companionAdminEnabled ? 'home' : name, params };
     setNavState(state => {
       const current = state.entries[state.index];
       if (sameRoute(current, next)) return state;
       const entries = [...state.entries.slice(0, state.index + 1), next];
       return { entries, index: entries.length - 1 };
     });
-  }, [sameRoute]);
+  }, [sameRoute, companionAdminEnabled]);
   const goBack = useCallbackA(() => {
     setNavState(state => ({ ...state, index: Math.max(0, state.index - 1) }));
   }, []);
@@ -117,6 +119,7 @@ function App() {
     onOpenTool: openTool,
     onOpenAffirm: () => navigate('tools', { sub: 'affirm' }),
     onOpenPanic: () => setModal('danger'),
+    companionEnabled: companionAdminEnabled,
   };
 
   let screen = null;
@@ -128,7 +131,8 @@ function App() {
     screen = <window.Screens.ToolsScreen
       t={t} store={store}
       onLogMood={onLogMood} onOpenTool={openTool} onSaveReframe={onSaveReframe}
-      onOpenCompanion={() => navigate('companion')}
+      onOpenCompanion={companionAdminEnabled ? () => navigate('companion') : null}
+      companionEnabled={companionAdminEnabled}
       sub={route.params.tool || route.params.sub}
       showResearch={effectiveShowResearch}
       lowTextMode={!!tweaks.lowTextMode}
@@ -140,10 +144,10 @@ function App() {
     />;
   } else if (route.name === 'journal') {
     screen = <window.Screens.JournalScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} safetyLanguage={tweaks.safetyLanguage || 'english'} />;
-  } else if (route.name === 'companion') {
+  } else if (route.name === 'companion' && companionAdminEnabled) {
     screen = <window.Screens.CompanionScreen t={t} store={store} persistLocal={persistLocal} onOpenTool={openTool} />;
   } else if (route.name === 'help') {
-    screen = <window.Screens.HelpScreen t={t} store={store} sub={route.params.sub} />;
+    screen = <window.Screens.HelpScreen t={t} store={store} sub={route.params.sub} companionEnabled={companionAdminEnabled} />;
   }
 
   return (
@@ -153,6 +157,7 @@ function App() {
         t={displayT}
         current={route.name}
         onNavigate={(id) => navigate(id)}
+        showCompanion={companionAdminEnabled}
         canGoBack={navState.index > 0}
         canGoForward={navState.index < navState.entries.length - 1}
         onBack={goBack}
@@ -174,12 +179,12 @@ function App() {
       {modal === 'breathing' && <window.Tools.BoxBreathing onClose={closeTool} />}
       {modal === 'grounding' && <window.Tools.Grounding onClose={closeTool} />}
       {modal === 'public'    && <window.Tools.PublicGrounding onClose={closeTool} />}
-      {modal === 'danger'    && <window.Tools.DangerNow onClose={closeTool} onOpenPublic={() => { closeTool(); setTimeout(() => setModal('public'), 50); }} onOpenCompanion={() => { closeTool(); navigate('companion'); }} />}
-      {modal === 'checkin'   && <window.Tools.CheckIn onClose={closeTool} onLogMood={(m) => onLogMood(m)} onNavigate={(id) => { if (['breathing','grounding','public','danger','reframe','journal','affirm'].includes(id)) { if (id === 'reframe') navigate('tools', { tool: 'reframe' }); else if (id === 'affirm') navigate('tools', { sub: 'affirm' }); else if (id === 'journal') navigate('journal'); else openTool(id); } else { navigate(id); } }} />}
+      {modal === 'danger'    && <window.Tools.DangerNow onClose={closeTool} onOpenPublic={() => { closeTool(); setTimeout(() => setModal('public'), 50); }} onOpenCompanion={companionAdminEnabled ? () => { closeTool(); navigate('companion'); } : null} />}
+      {modal === 'checkin'   && <window.Tools.CheckIn companionEnabled={companionAdminEnabled} onClose={closeTool} onLogMood={(m) => onLogMood(m)} onNavigate={(id) => { if (['breathing','grounding','public','danger','reframe','journal','affirm'].includes(id)) { if (id === 'reframe') navigate('tools', { tool: 'reframe' }); else if (id === 'affirm') navigate('tools', { sub: 'affirm' }); else if (id === 'journal') navigate('journal'); else openTool(id); } else { navigate(id); } }} />}
       {modal === 'panic'     && <window.Tools.Panic onClose={closeTool}
           onOpenBreathing={() => { closeTool(); setTimeout(() => setModal('breathing'), 50); }}
           onOpenGrounding={() => { closeTool(); setTimeout(() => setModal('grounding'), 50); }}
-          onOpenCompanion={() => { closeTool(); navigate('companion'); }}
+          onOpenCompanion={companionAdminEnabled ? () => { closeTool(); navigate('companion'); } : null}
       />}
 
       {toast && <div className="toast">{toast}</div>}

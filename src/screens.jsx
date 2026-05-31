@@ -484,13 +484,13 @@ function SurvivorToolsFirstVisit({ onSelectTab, onSeeAllTools }) {
 }
 
 // HUB version of home — radial nodes
-function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpenTool, onOpenAffirm, onOpenPanic }) {
+function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpenTool, onOpenAffirm, onOpenPanic, companionEnabled = false }) {
   const affirm = window.AMANAT_CONTENT.affirmations[store.state.affirmIdx % window.AMANAT_CONTENT.affirmations.length];
   const nodes = [
     { id: 'breathing', icon: 'breathing', label: t('tools.breathing'), angle: -90 },
     { id: 'grounding', icon: 'grounding', label: t('tools.grounding'), angle: -40 },
     { id: 'journal',   icon: 'journal',   label: t('nav.journal'),    angle: 10,  nav: true },
-    { id: 'companion', icon: 'companion', label: t('nav.companion'),  angle: 60,  nav: true },
+    ...(companionEnabled ? [{ id: 'companion', icon: 'companion', label: t('nav.companion'), angle: 60, nav: true }] : []),
     { id: 'reframe',   icon: 'reframe',   label: t('tools.reframe'),  angle: 120 },
     { id: 'help',      icon: 'help',      label: t('nav.help'),       angle: 170, nav: true },
     { id: 'tools',     icon: 'tools',     label: t('nav.tools'),      angle: 220, nav: true },
@@ -540,7 +540,7 @@ function HomeHub({ t, lang, store, onNavigate, onStartCheckIn, onLogMood, onOpen
 // ────────────────────────────────────────────────────────────────────────────
 // TOOLS screen — full surface for breathing/grounding/reframe + mood + affirmations
 // ────────────────────────────────────────────────────────────────────────────
-function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCompanion, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor', showClinicalTerms = false }) {
+function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCompanion, companionEnabled = false, sub, showResearch = false, lowTextMode = false, tapOnlyMode = false, readAloud = false, safetyLanguage = 'english', userRole = 'survivor', showClinicalTerms = false }) {
   const defaultTab = userRole === 'survivor' ? 'feelings' : 'overview';
   const [tab, setTab] = useStateS(sub || defaultTab);
   const [cultureAnchor, setCultureAnchor] = useStateS(null);
@@ -736,7 +736,7 @@ function ToolsScreen({ t, store, onLogMood, onOpenTool, onSaveReframe, onOpenCom
       {!showSurvivorFirstVisit && tab === 'privacy' && <SharedDevicePanel lowTextMode={lowTextMode} />}
       {!showSurvivorFirstVisit && tab === 'modes' && <ModesPanel onOpenTool={onOpenTool} />}
       {!showSurvivorFirstVisit && tab === 'mood' && <MoodPanel store={store} onLogMood={onLogMood} />}
-      {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} onOpenCompanion={onOpenCompanion} />}
+      {!showSurvivorFirstVisit && tab === 'reframe' && <window.Tools.Reframe lastReframes={store.state.reframeLog} onSave={(i, o) => onSaveReframe(i, o)} onOpenCompanion={companionEnabled ? onOpenCompanion : null} />}
       {!showSurvivorFirstVisit && tab === 'cards' && <SurvivorCardsPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
       {!showSurvivorFirstVisit && tab === 'shame' && <ShameSpiralPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
       {!showSurvivorFirstVisit && tab === 'profiles' && <ResponseProfilesPanel showBrowseLists={showBrowseLists} tapOnlyMode={tapOnlyMode} readAloud={readAloud} userRole={userRole} showClinicalTerms={showClinicalTerms} />}
@@ -3180,7 +3180,7 @@ function JournalScreen({ t, store, persistLocal, onOpenTool }) {
 // ────────────────────────────────────────────────────────────────────────────
 // HELP screen — partner guide, scripts, crisis steps, resources
 // ────────────────────────────────────────────────────────────────────────────
-function HelpScreen({ t, store, sub }) {
+function HelpScreen({ t, store, sub, companionEnabled = false }) {
   const [tab, setTab] = useStateS(sub || 'resources');
   useEffectS(() => { if (sub) setTab(sub); }, [sub]);
 
@@ -3209,7 +3209,7 @@ function HelpScreen({ t, store, sub }) {
       </div>
 
       {tab === 'resources' && <ResourcesPanel />}
-      {tab === 'safety'    && <SafetyPrivacyPanel />}
+      {tab === 'safety'    && <SafetyPrivacyPanel companionEnabled={companionEnabled} />}
       {tab === 'minors'    && <MinorsSafeguardingPanel />}
       {tab === 'csa'       && <CsaDisclosurePanel onOpenTool={() => {}} />}
       {tab === 'dv'        && <DomesticViolencePlanPanel onOpenTool={() => {}} />}
@@ -3265,15 +3265,17 @@ function ResourcesPanel() {
   );
 }
 
-function SafetyPrivacyPanel() {
+function SafetyPrivacyPanel({ companionEnabled = false }) {
   const items = [
     {
       title: 'What local deletion does',
       body: 'Erase everything removes mood logs, journal entries, saved scripts, reframes, and local chat history from this browser storage. It cannot erase text already sent to an AI/model service for processing.',
     },
     {
-      title: 'Before Companion/Reframe',
-      body: 'Companion and Reframe are AI-assisted. They may be wrong, incomplete, or too generic. They are not a therapist, lawyer, doctor, crisis service, or child-protection service.',
+      title: companionEnabled ? 'Before Companion/Reframe' : 'Before Reframe',
+      body: companionEnabled
+        ? 'Companion and Reframe are AI-assisted. They may be wrong, incomplete, or too generic. They are not a therapist, lawyer, doctor, crisis service, or child-protection service.'
+        : 'Reframe is AI-assisted. It may be wrong, incomplete, or too generic. It is not a therapist, lawyer, doctor, crisis service, or child-protection service.',
     },
     {
       title: 'Shared-device safety',

@@ -87,7 +87,8 @@ function TopbarChrome({ t, onOpenTweaks, onOpenSettings, showBrandSub = true, ca
 // ────────────────────────────────────────────────────────────────────────────
 // Tab-bar shell
 // ────────────────────────────────────────────────────────────────────────────
-function TabBarShell({ t, current, onNavigate, children, onOpenSettings, canGoBack, canGoForward, onBack, onForward }) {
+function TabBarShell({ t, current, onNavigate, children, onOpenSettings, canGoBack, canGoForward, onBack, onForward, showCompanion = false }) {
+  const visibleNav = showCompanion ? SHELL_NAV : SHELL_NAV.filter(item => item.id !== 'companion');
   return (
     <div className="app-root shell-tabbar">
       <TopbarChrome
@@ -100,7 +101,7 @@ function TabBarShell({ t, current, onNavigate, children, onOpenSettings, canGoBa
       />
       <div className="stage">{children}</div>
       <nav className="tabbar" aria-label="Primary">
-        {SHELL_NAV.map(item => (
+        {visibleNav.map(item => (
           <button
             key={item.id}
             className={"tabbar-item" + (current === item.id ? ' active' : '')}
@@ -118,7 +119,8 @@ function TabBarShell({ t, current, onNavigate, children, onOpenSettings, canGoBa
 // ────────────────────────────────────────────────────────────────────────────
 // Side-rail shell
 // ────────────────────────────────────────────────────────────────────────────
-function SideRailShell({ t, current, onNavigate, children, onOpenSettings, canGoBack, canGoForward, onBack, onForward }) {
+function SideRailShell({ t, current, onNavigate, children, onOpenSettings, canGoBack, canGoForward, onBack, onForward, showCompanion = false }) {
+  const visibleNav = showCompanion ? SHELL_NAV : SHELL_NAV.filter(item => item.id !== 'companion');
   return (
     <div className="app-root shell-siderail">
       <aside className="siderail">
@@ -131,7 +133,7 @@ function SideRailShell({ t, current, onNavigate, children, onOpenSettings, canGo
             </span>
           </a>
         </div>
-        {SHELL_NAV.map(item => (
+        {visibleNav.map(item => (
           <button
             key={item.id}
             className={"siderail-item" + (current === item.id ? ' active' : '')}
